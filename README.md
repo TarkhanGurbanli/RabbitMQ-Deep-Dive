@@ -173,6 +173,7 @@ RabbitMQ — AMQP protokolu əsasında çalışan message broker-dir və özün�
         - Channel — Connection üzərindən bir və ya bir neçə mesajlaşma əməliyyatını icra edən virtual bağlantıdır.
         - Nəticədə, bir Connection üzərindən çoxlu Channel-lar aça bilərsən.
     - 📌 RabbitMQ Arxitekturası — Diagram (Sözlə Təsviri):
+```css
 [Producer] 
      │  
      ▼  
@@ -185,6 +186,7 @@ RabbitMQ — AMQP protokolu əsasında çalışan message broker-dir və özün�
  │   │              │
  ▼   ▼              ▼
 [Consumer1]   [Consumer2]
+```
 
 - Açıqlama:
     - ✅ Loose Coupling — tətbiqlər bir-birindən asılı olmur
