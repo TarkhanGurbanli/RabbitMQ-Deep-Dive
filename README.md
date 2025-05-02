@@ -286,4 +286,89 @@ Yəni Producer mesajı Exchange-ə göndərir, Exchange isə routing key və bin
 
 ---
 
+## <img src="https://github.com/user-attachments/assets/33634d28-6ca7-4717-a9b1-9b1b96ba11c4" width="50px">  Queue və Binding-lər (Queues and Bindings)
+
+### 📌 Queue nədir?
+
+- Queue — RabbitMQ-da mesajların müvəqqəti olaraq saxlanıldığı növbədir.
+  Yəni Exchange tərəfindən yönləndirilən mesajlar Queue-ya düşür və buradan Consumer-lar tərəfindən oxunub işlənir.
+
+  
+### 📌 Queue-nin əsas funksiyası:
+
+- Mesajları müvəqqəti saxlayır.
+- Mesajlar FIFO (First In, First Out) prinsipi ilə işlənir.
+- Consumer gələn kimi, mesaj Queue-dan çıxarılıb ona ötürülür.
+- Əgər heç bir Consumer yoxdursa, mesaj Queue-da gözləyir.
+- Əgər durable (sabit) təyin edilibsə, server restart olsa belə, məlumat itmir.
+
+### 📌 Queue Xüsusiyyətləri:
+
+- 1️⃣ Name — Hər queue-nun unikal adı olur.
+- 2️⃣ Durable — Queue və mesajlar RabbitMQ restart olsa belə qorunub saxlanır.
+- 3️⃣ Exclusive — Yalnız müəyyən bir Connection tərəfindən istifadə edilir və o Connection bağlananda silinir.
+- 4️⃣ Auto-delete — Queue-nun heç bir consumer-ı qalmadıqda avtomatik silinir.
+
+### 📌 Queue-nun İş Qaydası:
+
+1. Producer → Mesajı Exchange-ə göndərir.
+2. Exchange → Yönləndirmə qaydasına görə mesajı Queue-ya ötürür.
+3. Queue → Mesajı saxlayır.
+4. Consumer → Queue-dan mesajı oxuyur və işləyir.
+
+## 📌 Binding nədir?
+
+Binding — Exchange ilə Queue arasındakı əlaqədir.
+Yəni Exchange-dən gələn mesaj hansı Queue-ya düşəcək, bu Binding qaydaları ilə təyin olunur.
+
+### 📌 Binding-in əsas xüsusiyyətləri:
+
+- Routing key və ya pattern əsasında qurulur.
+- Exchange növünə görə routing key-lər fərqli işləyə bilər.
+- Bir Exchange bir neçə Queue-ya bağlı ola bilər.
+- Bir Queue bir neçə Exchange-ə bağlana bilər.
+
+### 📌 Binding Necə İşləyir?
+Məsələn:
+    - Direct Exchange istifadə edirsənsə:
+        - Queue-ya order.created binding key ilə bağlanırsan.
+        - Exchange-ə routing key order.created ilə mesaj gələndə bu Queue-ya yönəlir.
+    - Topic Exchange-də isə pattern-lər:
+        - order.* → order.created, order.updated mesajlarını qəbul edər.
+        - order.# → order ilə başlayan bütün routing key-ləri qəbul edər.
+
+### 📌 Queue və Binding — Diagramla
+```markdown
+Producer
+    │
+    ▼
+ Exchange
+    │
+ ┌──┴────┐
+ │Binding│
+ └──┬────┘
+    ▼
+  Queue
+    │
+    ▼
+ Consumer
+```
+
+### 📌 Queue və Binding Real Misal:
+Scenario: OrderService sifariş yaradır və bu sifarişin StockService və InvoiceService-ə getməsi lazımdır.
+    - order.created routing key ilə mesaj Exchange-ə göndərilir.
+    - StockQueue və InvoiceQueue binding key order.created ilə Exchange-ə bağlıdır.
+    - Exchange mesajı hər iki Queue-ya yönəldir.
+    - Hər iki Consumer bu Queue-lardan mesajı götürüb işləyir.
+
+### 📌 Nəticə
+
+```java
+// Komponent        	Vəzifəsi
+//-----------------------------------------------------------------------------------------------
+// Queue	            Mesajları müvəqqəti saxlayır və FIFO prinsipi ilə Consumer-lara ötürür.
+// Binding	            Exchange ilə Queue arasındakı routing qaydasını təyin edir.
+```
+
+        
 
