@@ -139,6 +139,6 @@ AMQP protokolunda əsas anlayışlar:
 
 ---
 
-## 🏗️ RabbitMQ-nun Arxitekturası (RabbitMQ Architecture)
-<img src="https://github.com/user-attachments/assets/895ec9d6-54d3-4a0f-99b8-d6383b741514" width="100px">
+## <img src="https://github.com/user-attachments/assets/895ec9d6-54d3-4a0f-99b8-d6383b741514" width="70px"> RabbitMQ-nun Arxitekturası (RabbitMQ Architecture)
+
 
