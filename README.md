@@ -47,7 +47,7 @@ Məsələn:
 
 ---      
 
-## 📨 Mesajlaşma Sistemi nədir? (What is a Messaging System?)
+## <img src="https://github.com/user-attachments/assets/65a50f5a-af6d-475d-a556-352b11d90210" width="50px">  Mesajlaşma Sistemi nədir? (What is a Messaging System?)
 
 Mesajlaşma Sistemi — fərqli tətbiqlər və ya servislər arasında məlumat ötürmək üçün istifadə olunan proqram təminatı arxitekturasıdır. Bu sistemlər tətbiqlər arasında mesaj (məlumat vahidi) göndərib almağa imkan yaradır. Məqsəd — fərqli sistemlər və komponentlər arasında etibarlı, asinxron, asılı olmayan və çevik məlumat mübadiləsi təmin etməkdir.
 
@@ -141,4 +141,63 @@ AMQP protokolunda əsas anlayışlar:
 
 ## <img src="https://github.com/user-attachments/assets/895ec9d6-54d3-4a0f-99b8-d6383b741514" width="50px"> RabbitMQ-nun Arxitekturası (RabbitMQ Architecture)
 
+RabbitMQ — AMQP protokolu əsasında çalışan message broker-dir və özünün spesifik arxitekturası var. Bu arxitektura fərqli sistem və tətbiqlər arasında mesaj ötürülməsini etibarlı, çevik və asinxron şəkildə təşkil edir.
 
+### 📌 RabbitMQ Arxitekturasının Əsas Komponentlər
+- RabbitMQ arxitekturası aşağıdakı əsas komponentlər üzərində qurulub:
+    - 📌 1️⃣ Producer (Mesaj Göndərən Tərəf):
+        -  Producer — RabbitMQ-ya mesaj göndərən tətbiqdir. Mesajlar birbaşa Exchange-ə göndərilir, yoxsa queue-ya deyil!
+        -  Qaydası: Producer → Exchange
+    - 📌 2️⃣ Exchange (Mesaj Paylayıcısı)
+        - Exchange — gələn mesajları qəbul edib, hansı queue-ya göndəriləcəyinə qərar verən komponentdir.
+          Mesajın routing key və binding rules əsasında queue-lara yönləndirilməsi burada baş tutur.
+        - Exchange Tipləri:
+            - Direct Exchange
+            - Fanout Exchange
+            - Topic Exchange
+            - Headers Exchange
+    - 📌 3️⃣ Binding (Bağlantı Qaydası)
+        - Exchange ilə Queue arasında olan bağlantıdır. Hər binding bir routing key və ya pattern əsasında qurulur.
+          Yəni Exchange qərar verir ki, hansı mesaj hansı queue-ya getsin.
+    - 📌 4️⃣ Queue (Mesaj Növbəsi)
+        - Queue — mesajların müvəqqəti saxlanıldığı yerdir.
+        - Consumer-lar gəlir və burdakı mesajları ardıcıllıqla oxuyur.
+        - Qaydası: Mesaj növbəyə düşəndən sonra orda saxlanılır və consumer onu götürüb işləyənə qədər orda qalır.
+    - 📌 5️⃣ Consumer (Mesaj Alan Tərəf)
+        - Consumer — queue-dan mesaj götürən və işləyən tətbiq və ya prosesdir. Bir neçə consumer eyni queue-ya qoşula və mesajları paylaşa bilər.
+    - 📌 6️⃣ Virtual Host (vHost)
+        - RabbitMQ serverində təhlükəsizlik və izolyasiya təmin etmək üçün istifadə olunur.
+          Bir server içində fərqli virtual host-lar yaradıb, istifadəçi və queue-ları ayıra bilərsən.
+    - 📌 7️⃣ Connection & Channel
+        - Connection — Producer və Consumer ilə RabbitMQ arasında qurulan TCP bağlantısıdır.
+        - Channel — Connection üzərindən bir və ya bir neçə mesajlaşma əməliyyatını icra edən virtual bağlantıdır.
+        - Nəticədə, bir Connection üzərindən çoxlu Channel-lar aça bilərsən.
+    - 📌 RabbitMQ Arxitekturası — Diagram (Sözlə Təsviri):
+[Producer] 
+     │  
+     ▼  
+ [Exchange]  
+     │  
+ ┌───┼──────────────┐
+ │   │              │
+ ▼   ▼              ▼
+[Queue1]        [Queue2]
+ │   │              │
+ ▼   ▼              ▼
+[Consumer1]   [Consumer2]
+
+- Açıqlama:
+    - ✅ Loose Coupling — tətbiqlər bir-birindən asılı olmur
+    - ✅ Asinxron və ardıcıl mesaj ötürülməsi
+    - ✅ Retry, durability və acknowledgment dəstəyi
+    - ✅ Load balancing — bir neçə consumer eyni queue-dan mesaj alıb işləyə bilir
+    - ✅ Scalability — broker-lər və queue-lar genişləndirilə bilir
+    - ✅ Cluster və HA (High Availability) imkanları
+
+### 📌 Real Ssenari Misalı:
+
+- OrderService sifariş verir → mesajı Direct Exchange-ə göndərir
+- Exchange baxır routing key-ə → OrderQueue-ya ötürür
+- InvoiceService və StockService consumer kimi OrderQueue-dan mesajı alıb işləyir.
+      
+---
