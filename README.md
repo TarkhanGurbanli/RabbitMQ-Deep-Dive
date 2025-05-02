@@ -28,7 +28,7 @@ All about RabbitMQ
 
 ---
     
-## 🐰 RabbitMQ nədir? (What is RabbitMQ?)
+## <img src="https://github.com/user-attachments/assets/9fea07e3-295c-4b10-8c10-99a087c3c14e" width="50px">  RabbitMQ nədir? (What is RabbitMQ?)
 
 RabbitMQ — açıq mənbə (open-source) kodlu, mesaj broker proqram təminatıdır. Yəni, proqramlar və xidmətlər arasında məlumat ötürmək üçün arada vasitəçi rolunu oynayan sistemdir.
 RabbitMQ əsasən Advanced Message Queuing Protocol (AMQP) standartına əsaslanır və server-lə client-lər arasında mesajların etibarlı şəkildə ötürülməsini təmin edir.
@@ -93,7 +93,7 @@ Mesajlaşma Sistemi — fərqli tətbiqlər və ya servislər arasında məlumat
 
 ---
 
-## <img src="https://github.com/user-attachments/assets/d11eab4b-6c3e-4338-b717-91cbe7dcd26d" width="50px"> AMQP nədir? (What is AMQP?)
+## <img src="https://github.com/user-attachments/assets/d11eab4b-6c3e-4338-b717-91cbe7dcd26d" width="50px">  AMQP nədir? (What is AMQP?)
 
 AMQP (Advanced Message Queuing Protocol) — mesajlaşma sistemləri üçün hazırlanmış açıq standart protokoldur. Məqsədi, fərqli proqramlaşdırma dilləri və platformalar üzərində qurulmuş tətbiqlər arasında etibarlı, təhlükəsiz və ardıcıl mesajlaşma təmin etməkdir.
 AMQP ilə müxtəlif sistemlər və tətbiqlər bir-biri ilə standart şəkildə mesaj göndərib ala bilir.
