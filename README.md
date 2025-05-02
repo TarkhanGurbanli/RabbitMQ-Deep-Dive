@@ -451,6 +451,7 @@ Scenario:
     - Producer: OrderService → yeni sifariş yaradanda order.created mesajı göndərir.
     - Queue: StockQueue və InvoiceQueue
     - Consumer: StockService və InvoiceService bu Queue-lardan mesaj alır və öz işini görür.
+    
 İş axını:
     - OrderService order.created mesajı yaradır və OrderExchange-ə göndərir.
     - OrderExchange bu mesajı order.created routing key-lə StockQueue və InvoiceQueue-ya yönləndirir.
