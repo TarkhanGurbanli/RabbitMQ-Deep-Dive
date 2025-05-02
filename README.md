@@ -25,7 +25,7 @@ All about RabbitMQ
 20. [Monitoring və Metrics (Prometheus, Grafana inteqrasiyası)](#-monitoring-və-metrics-prometheus-grafana-inteqrasiyası)
 21. [Cluster və High Availability (HA) Konfiqurasiyası](#-cluster-və-high-availability-ha-konfiqurasiyası)
 22. [RabbitMQ Performans Tuning və Best Practices](#-rabbitmq-performans-tuning-və-best-practices)
-23. 
+
 ---
     
 ## <img src="https://github.com/user-attachments/assets/9fea07e3-295c-4b10-8c10-99a087c3c14e" width="50px">  RabbitMQ nədir? (What is RabbitMQ?)
@@ -370,5 +370,98 @@ Scenario: OrderService sifariş yaradır və bu sifarişin StockService və Invo
 // Binding	            Exchange ilə Queue arasındakı routing qaydasını təyin edir.
 ```
 
-        
+---
 
+## <img src="https://github.com/user-attachments/assets/349bfbc7-6d0f-478a-884c-d8a2580ef541" width="50px">  Producer və Consumer (Producer and Consumer)
+
+### 📌 Producer nədir?
+Producer — RabbitMQ sistemində mesaj yaradan və bu mesajı Exchange-ə göndərən tətbiq və ya servisdir.
+Yəni:
+    - Producer, məsələn bir sifariş yarananda, onun məlumatlarını bir mesaj kimi formalaşdırır.
+    - Bu mesajı RabbitMQ-ya (Exchange-ə) göndərir.
+    - Producer mesajın hansı routing key-lə gedəcəyini də təyin edir.
+
+### 📌 Producer Xüsusiyyətləri:
+
+- İstənilən proqramlaşdırma dili və ya servis ola bilər.
+- Mesajı yaratmaq, serialize etmək və Exchange-ə göndərmək məsuliyyətindədir.
+- Mesajı hansı routing key ilə göndərəcəyini özü müəyyən edir.
+- Mesajlar persistent (sabit) və ya transient (keçici) ola bilər.
+        
+### 📌 Producer-in İşi:
+
+```java
+Tətbiq → Mesajı yaradır → Exchange-ə göndərir
+```
+
+Misal:
+    Sifariş yarandıqda:
+    ```json
+    {
+      "orderId": 1234,
+      "status": "created"
+    }
+    ```
+   bu mesaj order.created routing key-lə OrderExchange-ə göndərilir.
+
+### 📌 Consumer nədir?
+
+Consumer — RabbitMQ sistemində Queue-dan mesajları oxuyub işləyən tətbiq və ya servisdir.
+Yəni: 
+    - RabbitMQ-da saxlanılan mesajları alır.
+    - Bu mesajı parse və ya deserialize edir.
+    - Lazım olan əməliyyatı həyata keçirir.
+
+### 📌 Consumer Xüsusiyyətləri:
+
+- İstənilən proqramlaşdırma dili və ya servis ola bilər.
+- Queue-ya bağlanır və mesaj gəldikdə onu qəbul edir.
+- Mesajı aldıqları zaman istəsələr acknowledge (təsdiq) göndərirlər ki, mesaj uğurla alındı.
+- Auto Ack və ya Manual Ack variantları mövcuddur.
+
+### 📌 Consumer-in İşi:
+
+```css
+Queue → Mesajı qəbul edir → İşləyir → Ack göndərir
+```
+
+Misal:
+    - Stock Service Queue-dan order.created mesajını oxuyur və həmin məhsul üçün stok azaldır.
+
+### 📌 Producer və Consumer Əlaqəsi — Ümumi Diagram:
+
+```markdown
+Producer
+    │
+    ▼
+ Exchange
+    │
+  Binding
+    │
+    ▼
+  Queue
+    │
+    ▼
+ Consumer
+```
+
+### 📌 Real Misal Ssenari:
+
+Scenario:
+    - Producer: OrderService → yeni sifariş yaradanda order.created mesajı göndərir.
+    - Queue: StockQueue və InvoiceQueue
+    - Consumer: StockService və InvoiceService bu Queue-lardan mesaj alır və öz işini görür.
+İş axını:
+    1. OrderService order.created mesajı yaradır və OrderExchange-ə göndərir.
+    2. OrderExchange bu mesajı order.created routing key-lə StockQueue və InvoiceQueue-ya yönləndirir.
+    3. StockService və InvoiceService bu Queue-lardan mesajı götürüb emal edir.
+    4. Emal etdikdən sonra RabbitMQ-ya acknowledge göndərilir ki, mesaj uğurla işləndi.
+
+### 📌 Nəticə
+```java
+Komponent	Vəzifəsi
+Producer	Mesaj yaradır və Exchange-ə göndərir.
+Consumer	Queue-dan mesajı alır və emal edir.
+```
+
+---
