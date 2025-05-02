@@ -3,32 +3,32 @@ All about RabbitMQ
 
 
 ## Mündəricat (Table of Contents)
-1. [**RabbitMQ nədir? (What is RabbitMQ?)**](#-rabbitmq-nədir-what-is-rabbitmq)
-2. **Mesajlaşma Sistemi nədir? (What is a Messaging System?)**
-3. **AMQP nədir? (What is AMQP?)**
-4. **RabbitMQ-nun Arxitekturası (RabbitMQ Architecture)**
-5. **Exchange növləri (Types of Exchanges)**
-6. **Queue və Binding-lər (Queues and Bindings)**
-7. **Producer və Consumer (Producer and Consumer)**
-8. **Routing Key və Pattern Matching**
-9. **Dead Letter Queue (DLQ) nədir və nə üçün istifadə olunur?**
-10. **Message Acknowledgment (Əlavə təsdiqləmə mexanizmi)**
-11. **Durability və Persistence anlayışları**
-12. **Spring Boot ilə RabbitMQ konfiqurasiyası**
-13. **Basic Producer və Consumer tətbiqləri**
-14. **Retry mexanizmi və Error Handling**
-15. **DLQ ilə işləmək (DLQ Handling)**
-16. **Fanout, Direct, Topic və Headers exchange misalları**
-17. **Message Converter və Serialization**
-18. **RabbitMQ Management Plugin və UI istifadə qaydası**
-19. **Security: User, Permission və TLS**
-20. **Monitoring və Metrics (Prometheus, Grafana inteqrasiyası)**
-21. **Cluster və High Availability (HA) Konfiqurasiyası**
-22. **RabbitMQ Performans Tuning və Best Practices**
-
+1. [RabbitMQ nədir? (What is RabbitMQ?)](#-rabbitmq-nədir-what-is-rabbitmq)
+2. [Mesajlaşma Sistemi nədir? (What is a Messaging System?)](#-mesajlaşma-sistemi-nədir-what-is-a-messaging-system)
+3. [AMQP nədir? (What is AMQP?)](#-amqp-nədir-what-is-amqp)
+4. [RabbitMQ-nun Arxitekturası (RabbitMQ Architecture)](#-rabbitmq-nun-arxitekturası-rabbitmq-architecture)
+5. [Exchange növləri (Types of Exchanges)](#-exchange-növləri-types-of-exchanges)
+6. [Queue və Binding-lər (Queues and Bindings)](#-queue-və-binding-lər-queues-and-bindings)
+7. [Producer və Consumer (Producer and Consumer)](#-producer-və-consumer-producer-and-consumer)
+8. [Routing Key və Pattern Matching](#-routing-key-və-pattern-matching)
+9. [Dead Letter Queue (DLQ) nədir və nə üçün istifadə olunur?](#-dead-letter-queue-dlq-nədir-və-nə-üçün-istifadə-olunur)
+10. [Message Acknowledgment (Əlavə təsdiqləmə mexanizmi)](#-message-acknowledgment-əlavə-təsdiqləmə-mexanizmi)
+11. [Durability və Persistence anlayışları](#-durability-və-persistence-anlayışları)
+12. [Spring Boot ilə RabbitMQ konfiqurasiyası](#-spring-boot-ilə-rabbitmq-konfiqurasiyası)
+13. [Basic Producer və Consumer tətbiqləri](#-basic-producer-və-consumer-tətbiqləri)
+14. [Retry mexanizmi və Error Handling](#-retry-mexanizmi-və-error-handling)
+15. [DLQ ilə işləmək (DLQ Handling)](#-dlq-ilə-işləmək-dlq-handling)
+16. [Fanout, Direct, Topic və Headers exchange misalları](#-fanout-direct-topic-və-headers-exchange-misalları)
+17. [Message Converter və Serialization](#-message-converter-və-serialization)
+18. [RabbitMQ Management Plugin və UI istifadə qaydası](#-rabbitmq-management-plugin-və-ui-istifadə-qaydası)
+19. [Security: User, Permission və TLS](#-security-user-permission-və-tls)
+20. [Monitoring və Metrics (Prometheus, Grafana inteqrasiyası)](#-monitoring-və-metrics-prometheus-grafana-inteqrasiyası)
+21. [Cluster və High Availability (HA) Konfiqurasiyası](#-cluster-və-high-availability-ha-konfiqurasiyası)
+22. [RabbitMQ Performans Tuning və Best Practices](#-rabbitmq-performans-tuning-və-best-practices)
+23. 
 ---
     
-## RabbitMQ nədir? (What is RabbitMQ?)  <img src="https://github.com/user-attachments/assets/9fea07e3-295c-4b10-8c10-99a087c3c14e" width="50px">
+## <img src="https://github.com/user-attachments/assets/9fea07e3-295c-4b10-8c10-99a087c3c14e" width="50px">  RabbitMQ nədir? (What is RabbitMQ?)
 
 RabbitMQ — açıq mənbə (open-source) kodlu, mesaj broker proqram təminatıdır. Yəni, proqramlar və xidmətlər arasında məlumat ötürmək üçün arada vasitəçi rolunu oynayan sistemdir.
 RabbitMQ əsasən Advanced Message Queuing Protocol (AMQP) standartına əsaslanır və server-lə client-lər arasında mesajların etibarlı şəkildə ötürülməsini təmin edir.
