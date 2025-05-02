@@ -26,5 +26,23 @@ All about RabbitMQ
 21. **Cluster və High Availability (HA) Konfiqurasiyası**
 22. **RabbitMQ Performans Tuning və Best Practices**
 
-----
+---
     
+## 🐰 RabbitMQ nədir? (What is RabbitMQ?)
+
+- RabbitMQ — açıq mənbə (open-source) kodlu, mesaj broker proqram təminatıdır. Yəni, proqramlar və xidmətlər arasında məlumat ötürmək üçün arada vasitəçi rolunu oynayan sistemdir.
+RabbitMQ əsasən Advanced Message Queuing Protocol (AMQP) standartına əsaslanır və server-lə client-lər arasında mesajların etibarlı şəkildə ötürülməsini təmin edir.
+
+### 📌 RabbitMQ nə işə yarayır?
+
+- RabbitMQ tətbiqlər arasında məlumatları asinxron və etibarlı şəkildə ötürməyə kömək edir.
+Məsələn:
+    - Bir sistem sifarişi qəbul edib RabbitMQ-ya mesaj göndərir.
+    - Başqa sistemlər isə bu mesajı oxuyub öz işlərini yerinə yetirirlər.
+- Bu şəkildə:
+    - Sistemlər bir-birindən asılı olmur
+    - Mesajlar itmir
+    - Yük balanslaşdırması və performans artır
+    - Retry və error management rahat olur
+
+---      
