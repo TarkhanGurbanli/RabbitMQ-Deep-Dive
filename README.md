@@ -46,3 +46,49 @@ Məsələn:
     - Retry və error management rahat olur
 
 ---      
+
+## 📨 Mesajlaşma Sistemi nədir? (What is a Messaging System?)
+
+- Mesajlaşma Sistemi — fərqli tətbiqlər və ya servislər arasında məlumat ötürmək üçün istifadə olunan proqram təminatı arxitekturasıdır. Bu sistemlər tətbiqlər arasında mesaj (məlumat vahidi) göndərib almağa imkan yaradır. Məqsəd — fərqli sistemlər və komponentlər arasında etibarlı, asinxron, asılı olmayan və çevik məlumat mübadiləsi təmin etməkdir.
+
+### 📌 Mesajlaşma Sisteminin Əsas Məqsədi
+
+- Tətbiqlər arasındakı əlaqəni zəiflətmək (loose coupling)
+- Asinxron məlumat ötürmək
+- Etibarlı və ardıcıl məlumat çatdırmaq
+- Yük balanslaşdırmaq və sistem performansını artırmaq
+- Retry və error handling təmin etmək
+
+### 📌 Mesajlaşma Sistemi necə işləyir?
+
+- Mesajlaşma sistemi aşağıdakı komponentlərdən ibarətdir:
+    - Producer (İstehsalçı) - Mesajı yaradan və göndərən tətbiq.
+    - Message Broker / Messaging Middleware - Mesajları qəbul edən və müvafiq olaraq növbəyə və ya ünvanına çatdıran vasitəçi proqram. (RabbitMQ, Kafka, ActiveMQ kimi)
+    - Queue və ya Topic - Mesajların saxlanıldığı müvəqqəti yaddaş sahəsi.
+    - Consumer (İstehlakçı) - Mesajları qəbul edən və onları işləyən tətbiq və ya xidmət.
+ 
+### 📌 Mesajlaşma Sistemi Növləri
+
+1. Point-to-Point (Queue-based)
+→ Mesaj bir Producer tərəfindən göndərilir və bir Consumer tərəfindən qəbul olunur. Mesaj qəbul olunduqdan sonra növbədən silinir.
+2. Publish/Subscribe (Topic-based)
+→ Producer mesajı bir Topic-ə göndərir və həmin Topic-ə abunə olan bütün Consumer-lar mesajı qəbul edir.
+
+### 📌 Mesajlaşma Sisteminin Üstünlükləri
+
+1. ✅ Asinxron İcra - Tətbiqlər eyni anda işləməyə ehtiyac duymur, mesajlar növbəyə düşür.
+2. ✅ Scalability - Tətbiqlər və mesajlar çoxaldıqca sistem rahat genişlənə bilir.
+3. ✅ Loose Coupling - Tətbiqlər bir-birindən asılı olmur, müstəqil işləyir.
+4. ✅ Etibarlılıq - Mesajlar saxlanılır və sistem çökdükdə belə bərpa oluna bilir.
+5. ✅ Load Balancing və Retry mexanizmi - Consumer-lar arasında yük bölünür və uğursuz mesajlar yenidən cəhd edilə bilir.
+
+### 📌 Mesajlaşma Sistemləri hansı hallarda istifadə olunur?
+
+- Mikroservis arxitekturalarında
+- E-commerce sifariş sistemlərində
+- Bildiriş və mail göndərmə sistemlərində
+- Log və event toplama platformalarında
+- Real-time chat və oyun sistemlərində
+- Task queue və background job icrasında
+
+---
