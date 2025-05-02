@@ -248,7 +248,7 @@ Yəni Producer mesajı Exchange-ə göndərir, Exchange isə routing key və bin
             - Mesajın routing key-i ilə queue-ların binding key-ləri pattern əsaslı yoxlanılır.
             - Burda * və # wildcard-ları istifadə olunur.
                 - * → bir sözü təmsil edir.
-                - # → sıfır və ya daha çox sözü təmsil edir.
+                - "#" → sıfır və ya daha çox sözü təmsil edir.
         - İstifadə ssenarisi:
             - Çox çevik və kompleks routing-lər üçün.
         - Məsələn:
