@@ -93,7 +93,7 @@ Mesajlaşma Sistemi — fərqli tətbiqlər və ya servislər arasında məlumat
 
 ---
 
-## 🥸 AMQP nədir? (What is AMQP?)
+## <img src="https://github.com/user-attachments/assets/d11eab4b-6c3e-4338-b717-91cbe7dcd26d" width="50px"> AMQP nədir? (What is AMQP?)
 
 AMQP (Advanced Message Queuing Protocol) — mesajlaşma sistemləri üçün hazırlanmış açıq standart protokoldur. Məqsədi, fərqli proqramlaşdırma dilləri və platformalar üzərində qurulmuş tətbiqlər arasında etibarlı, təhlükəsiz və ardıcıl mesajlaşma təmin etməkdir.
 AMQP ilə müxtəlif sistemlər və tətbiqlər bir-biri ilə standart şəkildə mesaj göndərib ala bilir.
