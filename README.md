@@ -203,3 +203,88 @@ RabbitMQ — AMQP protokolu əsasında çalışan message broker-dir və özün�
 - InvoiceService və StockService consumer kimi OrderQueue-dan mesajı alıb işləyir.
       
 ---
+
+## <img src="https://github.com/user-attachments/assets/e9aa8833-35d7-4c2b-9f3d-2c573ba569c2" width="50px">  Exchange növləri (Types of Exchanges)
+
+### 📌 Exchange Nədir?
+
+Exchange — RabbitMQ-da Producer-dan gələn mesajları qəbul edən və routing rules (yönləndirmə qaydaları) əsasında hansı queue-ya getməli olduğunu müəyyən edən komponentdir.
+Yəni Producer mesajı Exchange-ə göndərir, Exchange isə routing key və binding qaydalarına əsasən mesajı uyğun queue-ya ötürür.
+
+### 📌 RabbitMQ-da Exchange Növləri (Types of Exchanges)
+
+- RabbitMQ-da 4 əsas exchange növü var:
+    - 📌 1️⃣ Direct Exchange:
+        - Xüsusiyyəti:
+            - Mesaj routing key əsasında uyğun queue-ya yönləndirilir.
+            - Yəni mesajın routing key-i ilə queue-nun binding key-i tam uyğun olmalıdır.
+        - İstifadə ssenarisi:
+            - Əgər fərqli tip mesajları fərqli queue-lara yönləndirmək istəyirsənsə.
+            ```vbnet
+            Producer → routing key: "info" → Direct Exchange
+            Queue binding key: "info"
+            Mesaj → Queue-ya yönəldilir.                  
+            ```
+            
+    - 📌 2️⃣ Fanout Exchange
+        - Xüsusiyyəti:
+            - Routing key-ə baxmır!
+            - Gələn bütün mesajları ona bağlı olan bütün queue-lara göndərir.
+        - İstifadə ssenarisi:
+            - Bir mesajı eyni anda bir neçə servisin alması lazım olduqda (broadcast sistemləri).
+            ```ngnix
+            Producer → Fanout Exchange
+            Fanout Exchange → Queue1, Queue2, Queue3
+            ```
+        - Hər üç queue eyni mesajı alacaq.
+        ```markdown
+        Producer → Fanout Exchange → Queue1
+                                → Queue2
+                                → Queue3
+        ```
+        
+    - 📌 3️⃣ Topic Exchange
+        - Xüsusiyyəti:
+            - Mesajın routing key-i ilə queue-ların binding key-ləri pattern əsaslı yoxlanılır.
+            - Burda * və # wildcard-ları istifadə olunur.
+                - * → bir sözü təmsil edir.
+                - # → sıfır və ya daha çox sözü təmsil edir.
+        - İstifadə ssenarisi:
+            - Çox çevik və kompleks routing-lər üçün.
+        - Məsələn:
+            - Routing key: order.created
+            - Binding key: order.* → bu queue bu mesajı qəbul edəcək.
+        - Diagram:
+            ```java
+            Producer → Topic Exchange → Queue (binding key = "order.*")
+            ```
+
+    - 📌 4️⃣ Headers Exchange
+        - Xüsusiyyəti:
+            - Routing key istifadə etmir.
+            - Əvəzində, mesajın header-larındakı key-value cütlərinə əsaslanaraq queue-ya yönləndirir.
+        - İstifadə ssenarisi:
+            - Əgər mesaj yönləndirməsini routing key yox, metadata əsasında idarə etmək istəsən.
+        - Məsələn:
+            - Mesajın header-larında:
+            ```ini
+            type=invoice
+            format=pdf
+            ```
+        - Queue isə bu şərtlərə uyğun mesajları qəbul edir.
+        - Diagram:
+            ```java
+            Producer → Headers Exchange → Queue (header: type=invoice, format=pdf)
+            ```
+
+### 📌 Cədvəl İlə Xülasə
+Exchange Növü	    Routing Key İstifadəsi	            Yönləndirmə Qaydası	                        İstifadə Ssenarisi
+---
+Direct	                   Var	                        Tam uyğun routing key	                Fərqli tip mesajları bölmək
+Fanout	                   Yox	                        Bütün queue-lara göndərir	            Broadcast və event yayımı
+Topic	                   Var	                        Pattern (wildcard *, #) əsasında	    Çevik və pattern əsaslı yönləndirmə
+Headers	                   Yox	                        Mesaj header-larına əsasən	            Metadata əsaslı routing              
+
+---
+
+
