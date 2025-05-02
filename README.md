@@ -277,17 +277,12 @@ Yəni Producer mesajı Exchange-ə göndərir, Exchange isə routing key və bin
             Producer → Headers Exchange → Queue (header: type=invoice, format=pdf)
             ```
 
-### 📌 Cədvəl İlə Xülasə
-```java
-|----------------|------------------------------|-------------------------------------------|--------------------------------------------|
-|Exchange Növü	 |   Routing Key İstifadəsi	    |         Yönləndirmə Qaydası	            |             İstifadə Ssenarisi             |
-|----------------|------------------------------|-------------------------------------------|--------------------------------------------|
-|Direct	         |         Var	                |         Tam uyğun routing key	            |     Fərqli tip mesajları bölmək            |
-|Fanout	         |         Yox	                |         Bütün queue-lara göndərir	        |     Broadcast və event yayımı              |
-|Topic	         |         Var	                |         Pattern (wildcard *, #) əsasında  |	    Çevik və pattern əsaslı yönləndirmə  |
-|Headers	     |         Yox	                |         Mesaj header-larına əsasən	    |     Metadata əsaslı routing                |
-|----------------|------------------------------|-------------------------------------------|--------------------------------------------|
-```
+### 📌 Nəticə
+
+- RabbitMQ-da Exchange-lər:
+    - Mesajların hansı queue-ya getməli olduğunu müəyyən edir.
+    - 4 fərqli növ var: Direct, Fanout, Topic, Headers
+    - Hər biri fərqli ssenarilər üçün istifadə olunur və sistemi daha çevik və güclü edir.
 
 ---
 
