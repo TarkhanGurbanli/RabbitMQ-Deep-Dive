@@ -448,15 +448,15 @@ Producer
 ### 📌 Real Misal Ssenari:
 
 Scenario:
-    - Producer: OrderService → yeni sifariş yaradanda order.created mesajı göndərir.
-    - Queue: StockQueue və InvoiceQueue
-    - Consumer: StockService və InvoiceService bu Queue-lardan mesaj alır və öz işini görür.
+- Producer: OrderService → yeni sifariş yaradanda order.created mesajı göndərir.
+- Queue: StockQueue və InvoiceQueue
+- Consumer: StockService və InvoiceService bu Queue-lardan mesaj alır və öz işini görür.
     
 İş axını:
-    - OrderService order.created mesajı yaradır və OrderExchange-ə göndərir.
-    - OrderExchange bu mesajı order.created routing key-lə StockQueue və InvoiceQueue-ya yönləndirir.
-    - StockService və InvoiceService bu Queue-lardan mesajı götürüb emal edir.
-    - Emal etdikdən sonra RabbitMQ-ya acknowledge göndərilir ki, mesaj uğurla işləndi.
+- OrderService order.created mesajı yaradır və OrderExchange-ə göndərir.
+- OrderExchange bu mesajı order.created routing key-lə StockQueue və InvoiceQueue-ya yönləndirir.
+- StockService və InvoiceService bu Queue-lardan mesajı götürüb emal edir.
+- Emal etdikdən sonra RabbitMQ-ya acknowledge göndərilir ki, mesaj uğurla işləndi.
 
 ### 📌 Nəticə
 ```java
