@@ -92,3 +92,9 @@ Məsələn:
 - Task queue və background job icrasında
 
 ---
+
+## 🥸 AMQP nədir? (What is AMQP?)
+
+- AMQP (Advanced Message Queuing Protocol) — mesajlaşma sistemləri üçün hazırlanmış açıq standart protokoldur. Məqsədi, fərqli proqramlaşdırma dilləri və platformalar üzərində qurulmuş tətbiqlər arasında etibarlı, təhlükəsiz və ardıcıl mesajlaşma təmin etməkdir.
+- AMQP ilə müxtəlif sistemlər və tətbiqlər bir-biri ilə standart şəkildə mesaj göndərib ala bilir.
+RabbitMQ da məhz bu protokolu əsas götürərək işləyir.
