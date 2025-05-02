@@ -452,10 +452,10 @@ Scenario:
     - Queue: StockQueue və InvoiceQueue
     - Consumer: StockService və InvoiceService bu Queue-lardan mesaj alır və öz işini görür.
 İş axını:
-    1. OrderService order.created mesajı yaradır və OrderExchange-ə göndərir.
-    2. OrderExchange bu mesajı order.created routing key-lə StockQueue və InvoiceQueue-ya yönləndirir.
-    3. StockService və InvoiceService bu Queue-lardan mesajı götürüb emal edir.
-    4. Emal etdikdən sonra RabbitMQ-ya acknowledge göndərilir ki, mesaj uğurla işləndi.
+    - OrderService order.created mesajı yaradır və OrderExchange-ə göndərir.
+    - OrderExchange bu mesajı order.created routing key-lə StockQueue və InvoiceQueue-ya yönləndirir.
+    - StockService və InvoiceService bu Queue-lardan mesajı götürüb emal edir.
+    - Emal etdikdən sonra RabbitMQ-ya acknowledge göndərilir ki, mesaj uğurla işləndi.
 
 ### 📌 Nəticə
 ```java
