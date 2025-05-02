@@ -278,12 +278,16 @@ Yəni Producer mesajı Exchange-ə göndərir, Exchange isə routing key və bin
             ```
 
 ### 📌 Cədvəl İlə Xülasə
-Exchange Növü	    Routing Key İstifadəsi	            Yönləndirmə Qaydası	                        İstifadə Ssenarisi
----
-Direct	                   Var	                        Tam uyğun routing key	                Fərqli tip mesajları bölmək
-Fanout	                   Yox	                        Bütün queue-lara göndərir	            Broadcast və event yayımı
-Topic	                   Var	                        Pattern (wildcard *, #) əsasında	    Çevik və pattern əsaslı yönləndirmə
-Headers	                   Yox	                        Mesaj header-larına əsasən	            Metadata əsaslı routing              
+```css
+|----------------|------------------------------|-------------------------------------------|--------------------------------------------|
+|Exchange Növü	 |   Routing Key İstifadəsi	    |         Yönləndirmə Qaydası	            |             İstifadə Ssenarisi             |
+|----------------|------------------------------|-------------------------------------------|--------------------------------------------|
+|Direct	         |         Var	                |         Tam uyğun routing key	            |     Fərqli tip mesajları bölmək            |
+|Fanout	         |         Yox	                |         Bütün queue-lara göndərir	        |     Broadcast və event yayımı              |
+|Topic	         |         Var	                |         Pattern (wildcard *, #) əsasında  |	    Çevik və pattern əsaslı yönləndirmə  |
+|Headers	     |         Yox	                |         Mesaj header-larına əsasən	    |     Metadata əsaslı routing                |
+|----------------|------------------------------|-------------------------------------------|--------------------------------------------|
+```
 
 ---
 
