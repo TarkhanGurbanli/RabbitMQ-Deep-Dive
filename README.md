@@ -953,3 +953,144 @@ public Binding dlqBinding() {
 - ✅ Error Handling → hər cəhd uğursuzluğunda loglama, bildiriş və ya DLQ opsiyası verir
 
 ---
+
+## <img src="https://github.com/user-attachments/assets/8b554438-76d4-4306-a75b-73d090fc9426" width="50px">  DLQ ilə işləmək (DLQ Handling)
+
+### 📌 Dead Letter Queue (DLQ) nədir?
+
+- DLQ (Dead Letter Queue) — RabbitMQ-da başqa bir queue-dan rejected, expired və ya nack edilən (negative acknowledgment) mesajların yönləndirilə biləcəyi xüsusi queue-dur.
+- Yəni:
+    - Mesaj normal queue-da işlənə bilmir.
+    - Retry limitini aşır və ya ack alınmır.
+    - RabbitMQ o mesajı DLQ-a göndərir.
+- Bu, problemli mesajların itirilməməsi və sonradan analiz/işlənməsi üçün əla bir mexanizmdir.
+
+### 📌 DLQ nə üçün istifadə olunur?
+
+- ✅ Retry limitindən sonra mesajları itirməmək üçün
+- ✅ Problemli və ya zərərli mesajları ayırıb analiz etmək üçün
+- ✅ Əlavə monitorinq və loglama üçün
+- ✅ Manual şəkildə sonradan işləmək üçün
+
+### 📌 DLQ Quruluşu və Mexanizmi
+
+- Mesajın DLQ-a düşməsi üçün 3 əsas səbəb:
+    1. Message rejected (ack alınmadı və requeue = false)
+    2. Message TTL bitdi (Time To Live)
+    3. Queue limit doldu və yeni mesaj gələndə köhnə mesajlar DLQ-a düşdü
+
+### 📌 DLQ Konfiqurasiya Necə Olur?
+#### 1️⃣ DLX (Dead Letter Exchange) yaradılır
+#### 2️⃣ DLQ Queue yaradılır
+#### 3️⃣ Normal Queue yaradılarkən `x-dead-letter-exchange` və `x-dead-letter-routing-key` parametr verilir
+
+### 📌 Spring Boot və RabbitMQ ilə DLQ nümunəsi:
+
+#### `RabbitConfig.java`
+
+```java
+@Configuration
+public class RabbitConfig {
+
+    public static final String MAIN_QUEUE = "main-queue";
+    public static final String DLQ_QUEUE = "dlq-queue";
+    public static final String DLX_EXCHANGE = "dlx-exchange";
+    public static final String DLQ_ROUTING_KEY = "dlq-routingKey";
+
+    // Main Queue
+    @Bean
+    public Queue mainQueue() {
+        Map<String, Object> args = new HashMap<>();
+        args.put("x-dead-letter-exchange", DLX_EXCHANGE);
+        args.put("x-dead-letter-routing-key", DLQ_ROUTING_KEY);
+        return new Queue(MAIN_QUEUE, true, false, false, args);
+    }
+
+    // Dead Letter Queue
+    @Bean
+    public Queue deadLetterQueue() {
+        return new Queue(DLQ_QUEUE, true);
+    }
+
+    // DLX Exchange
+    @Bean
+    public DirectExchange dlxExchange() {
+        return new DirectExchange(DLX_EXCHANGE);
+    }
+
+    // DLQ Binding
+    @Bean
+    public Binding dlqBinding() {
+        return BindingBuilder.bind(deadLetterQueue())
+                .to(dlxExchange())
+                .with(DLQ_ROUTING_KEY);
+    }
+}
+```
+
+### 📌 Consumer Tərəfi
+
+- Main Queue Consumer:
+```java
+@Service
+public class MessageConsumer {
+
+    @RabbitListener(queues = RabbitConfig.MAIN_QUEUE)
+    public void receiveMessage(String message, Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) long tag) throws IOException {
+        try {
+            System.out.println("Gələn mesaj: " + message);
+            if (message.contains("error")) {
+                throw new RuntimeException("Problemli mesaj!");
+            }
+            channel.basicAck(tag, false);
+        } catch (Exception e) {
+            System.out.println("Mesaj reject edildi və DLQ-a göndərildi: " + message);
+            channel.basicReject(tag, false); // false → requeue etmir → DLQ-a gedir
+        }
+    }
+}
+```
+
+### DLQ Consumer
+```java
+@Service
+public class DLQConsumer {
+
+    @RabbitListener(queues = RabbitConfig.DLQ_QUEUE)
+    public void processDeadLetter(String message) {
+        System.out.println("DLQ mesajı: " + message);
+        // burda log, db insert və ya xüsusi işlər görə bilərsən
+    }
+}
+```
+
+### 📌 Mesaj TTL ilə DLQ
+
+- Əgər mesajın müəyyən müddət işlənmədiyini istəmirsənsə:
+- Main Queue-a TTL ver
+
+```java
+Map<String, Object> args = new HashMap<>();
+args.put("x-dead-letter-exchange", DLX_EXCHANGE);
+args.put("x-message-ttl", 5000); // 5 saniyə
+```
+
+- Mesaj 5 saniyə içində işlənməsə → avtomatik DLQ-a düşəcək.
+
+### 📌 DLQ Handling Prosesi:
+
+- ✅ Main Queue-da mesaj gələr
+- ✅ Problem çıxsa:
+    - → Retry varsa, Retry olur
+    - → Retry yox və ya limiti aşdısa, basicReject / nack edilirsə → DLQ-a düşür
+- ✅ DLQ-da ayrı Consumer bu mesajı oxuyur, log yazır, DB-yə saxlayır və ya bildiriş göndərir
+- ✅ İstəyirsənsə, DLQ mesajlarını manual olaraq təkrar Main Queue-a da göndərə bilərsən
+
+### 📌 Nəticə
+
+- 🔸 DLQ problemli mesajların təhlükəsiz saxlanması və idarəsi üçün əla vasitədir
+- 🔸 RabbitMQ ilə Spring Boot-da DLQ konfiqurasiyası çox sadə və çevikdir
+- 🔸 Retry mexanizmi ilə birlikdə istifadə olunanda sistem çox dayanıqlı olur
+- 🔸 DLQ-dan istənilən vaxt monitorinq və ya admin panel vasitəsilə mesajlar baxıla və idarə oluna bilər
+
+---
