@@ -1094,3 +1094,191 @@ args.put("x-message-ttl", 5000); // 5 saniyə
 - 🔸 DLQ-dan istənilən vaxt monitorinq və ya admin panel vasitəsilə mesajlar baxıla və idarə oluna bilər
 
 ---
+
+## <img src="[https://github.com/user-attachments/assets/8b554438-76d4-4306-a75b-73d090fc9426](https://github.com/user-attachments/assets/b3413a0d-187d-4271-8a46-843ae4296fff)" width="50px">  Fanout, Direct, Topic və Headers exchange misalları
+
+### 📌 RabbitMQ Exchange Nədir?
+
+- Exchange — RabbitMQ-da mesajların hansı queue-ya yönləndiriləcəyinə qərar verən mexanizmdir.
+  Producer mesajı Exchange-ə göndərir → Exchange mesajı Routing Key və Exchange tipinə görə uyğun Queue-ya yönləndirir.
+
+### 📌 Exchange Növləri və Misallar
+
+- 🎛️ 1️⃣ Fanout Exchange
+    - ✅ Bütün bağlı Queue-lara Routing Key olmadan mesaj göndərir.
+    - Yəni mesaj gələn kimi bütün bağlı queue-lara yayılır.
+- 📖 Misal:
+    - `Exchange`: `fanout-exchange`
+    - `Queues`: `queue1`, `queue2`
+- Producer → fanout-exchange → queue1 və queue2
+- Kod:
+```java
+@Bean
+FanoutExchange fanoutExchange() {
+    return new FanoutExchange("fanout-exchange");
+}
+
+@Bean
+Binding binding1() {
+    return BindingBuilder.bind(queue1()).to(fanoutExchange());
+}
+
+@Bean
+Binding binding2() {
+    return BindingBuilder.bind(queue2()).to(fanoutExchange());
+}
+```
+
+- İstifadə:
+```java
+rabbitTemplate.convertAndSend("fanout-exchange", "", "Salam Fanout!");
+```
+- 📝 Routing Key istifadə edilmir.
+
+- 🎛️ 2️⃣ Direct Exchange
+    - ✅ Mesaj Routing Key-ə tam uyğun olan queue-ya yönləndirilir.
+ 
+- 📖 Misal:
+- `Exchange`: `direct-exchange`
+- `Queues`: `errorQueue`, `infoQueue`
+- Producer → direct-exchange → Routing Key = "error" → errorQueue
+
+Kod:
+```java
+@Bean
+DirectExchange directExchange() {
+    return new DirectExchange("direct-exchange");
+}
+
+@Bean
+Binding errorBinding() {
+    return BindingBuilder.bind(errorQueue())
+        .to(directExchange())
+        .with("error");
+}
+
+@Bean
+Binding infoBinding() {
+    return BindingBuilder.bind(infoQueue())
+        .to(directExchange())
+        .with("info");
+}
+```
+
+- İstifadə:
+```java
+rabbitTemplate.convertAndSend("direct-exchange", "error", "Error baş verdi");
+rabbitTemplate.convertAndSend("direct-exchange", "info", "Info mesajı");
+```
+
+- 🎛️ 3️⃣ Topic Exchange
+    - ✅ Mesaj Routing Key Pattern-inə görə yönləndirilir.
+ 
+- Wildcard-lar:
+    - `*` → 1 söz
+    - `#` → 0 və ya daha çox söz
+ 
+- 📖 Misal:
+    - `Exchange`: `topic-exchange`
+ 
+- Queues:
+    - `queue.error`
+    - `queue.all`
+ 
+- Binding Key-lər
+    - `queue.error` → `log.error`
+    - `queue.all` → `log.#`
+
+Kod:
+```java
+@Bean
+TopicExchange topicExchange() {
+    return new TopicExchange("topic-exchange");
+}
+
+@Bean
+Binding errorBinding() {
+    return BindingBuilder.bind(queueError())
+        .to(topicExchange())
+        .with("log.error");
+}
+
+@Bean
+Binding allBinding() {
+    return BindingBuilder.bind(queueAll())
+        .to(topicExchange())
+        .with("log.#");
+}
+```
+
+- İstifadə:
+```java
+rabbitTemplate.convertAndSend("topic-exchange", "log.error", "Error log!");
+rabbitTemplate.convertAndSend("topic-exchange", "log.info.database", "DB info");
+```
+
+- ✅ log.error → queue.error və queue.all-a
+- ✅ log.info.database → yalnız queue.all-a
+
+- 🎛️ 4️⃣ Headers Exchange
+    - ✅ Mesajın header-larına görə yönləndirilir, Routing Key istifadə edilmir.
+ 
+- Misal:
+    - `Exchange`: `headers-exchange`
+    - `Queue`: `queue1`
+ 
+- Header Şərti:
+    - `type: admin`
+    - `format: json`
+
+ Kod:
+ ```java
+@Bean
+HeadersExchange headersExchange() {
+    return new HeadersExchange("headers-exchange");
+}
+
+@Bean
+Binding headerBinding() {
+    Map<String, Object> headerValues = new HashMap<>();
+    headerValues.put("type", "admin");
+    headerValues.put("format", "json");
+
+    return BindingBuilder.bind(queue1())
+        .to(headersExchange())
+        .whereAll(headerValues)
+        .match();
+}
+```
+
+- İstifadə:
+```java
+MessageProperties props = new MessageProperties();
+props.setHeader("type", "admin");
+props.setHeader("format", "json");
+
+Message message = new Message("Header message".getBytes(), props);
+
+rabbitTemplate.send("headers-exchange", "", message);
+```
+
+- ✅ Yalnız header-lar uyğun olsa → queue1-a göndərilir.
+
+### 📌 Cədvəl Xülasəsi:
+| Exchange Növü | Routing Key    | Pattern Dəstəyi | Header Dəstəyi | Təsvir                       |
+| :------------ | :------------- | :-------------- | :------------- | :--------------------------- |
+| **Fanout**    | Yox            | Yox             | Yox            | Bütün queue-lara yayır       |
+| **Direct**    | Dəqiq uyğunluq | Yox             | Yox            | Eyni Routing Key-li queue-ya |
+| **Topic**     | Var            | `*` və `#`      | Yox            | Pattern ilə yönləndirir      |
+| **Headers**   | Yox            | Yox             | Var            | Header-lara görə yönləndirir |
+
+
+### 📌 Nəticə
+
+- 🔸 Hər Exchange növünün öz üstün və istifadə yeri var:
+    - `Fanout` → yayım
+    - `Direct` → dəqiq yönləndirmə
+    - `Topic` → pattern-lə dinamik yönləndirmə
+    - `Headers` → header-larla şərti yönləndirmə
+
+---
