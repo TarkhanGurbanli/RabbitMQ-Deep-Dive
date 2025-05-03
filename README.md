@@ -1,4 +1,4 @@
-# <img src="https://miro.medium.com/v2/resize:fit:1000/1*Vti9b2wt2v5lo1yLp7iVSw.png" width="50px"> RabbitMQ-Deep-Dive
+# <img src="https://miro.medium.com/v2/resize:fit:1000/1*Vti9b2wt2v5lo1yLp7iVSw.png" width="150px"> RabbitMQ-Deep-Dive
 All about RabbitMQ
 
 ## Mündəricat (Table of Contents)
