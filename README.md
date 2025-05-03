@@ -467,4 +467,94 @@ Consumer	Queue-dan mesajı alır və emal edir.
 
 ---
 
-## <img src="https://github.com/user-attachments/assets/9bf57544-1b68-4b0e-a38f-f08231b2ba72" width="50px">  [##Routing Key və Pattern Matching]
+## <img src="https://github.com/user-attachments/assets/9bf57544-1b68-4b0e-a38f-f08231b2ba72" width="50px">  Routing Key və Pattern Matching
+
+### 📌 Routing Key nədir?
+- Routing Key — RabbitMQ-da Producer tərəfindən göndərilən mesajın hansı Queue-ya yönləndiriləcəyini Exchange-ə bildirmək üçün istifadə olunan açardır.
+Yəni:
+- Producer mesaj göndərərkən bir routing key təyin edir.
+- Exchange isə bu routing key əsasında Binding qaydalarına baxaraq, mesajı uyğun Queue-ya ötürür.
+
+### 📌 Routing key — string (mətn) şəklində olur və . (nöqtə) ilə bölünən sözlərdən ibarət ola bilər.
+Məsələn: 
+- order.created
+- order.updated
+- stock.reserved
+
+### 📌 Pattern Matching nədir?
+Pattern Matching — RabbitMQ-da Exchange növünə görə routing key-lərin pattern-lərlə uyğunlaşdırılmasıdır.
+Bu, xüsusilə Topic Exchange istifadə edilərkən aktiv olur.
+
+### 📌 İki əsas Pattern:
+- `*` (asterisk) — yalnız bir sözün yerinə keçir.
+- `#` (hash) — bir və ya daha çox sözün yerinə keçir.
+
+### 📌 Routing Key və Pattern Matching — Exchange Növlərinə görə
+
+#### 📌 1️⃣ Direct Exchange:
+
+- Burada routing key tam uyğun gəlməlidir.
+- Məsələn:
+    - Routing key: order.created
+    - Binding key: order.created → ✅ uyğun
+    - Binding key: order.updated → ❌ uyğun deyil
+
+ #### 📌 2️⃣ Topic Exchange:
+
+ - Burada pattern matching istifadə olunur.
+- `*` və `#` ilə daha dinamik routing mümkündür.
+
+Misallar:
+- Routing key: order.created
+- Binding key: order.* → ✅ uyğun (order.created)
+- Binding key: order.# → ✅ uyğun (order.created, order.updated, order.deleted)
+- Binding key: *.created → ✅ uyğun (order.created, stock.created)
+- Binding key: order.payment.* → routing key order.payment.done → ✅ uyğun
+
+#### 📌 3️⃣ Fanout Exchange:
+- Routing key əlaqəsizdir. Mesaj bütün bağlı Queue-lara göndərilir.
+
+#### 📌 4️⃣ Headers Exchange:
+- Routing key istifadə olunmur, əvəzində message header-lara baxılır.
+
+### 📌 Routing Key və Pattern Matching Diagramı:
+
+```markdown
+Producer
+   │
+   ▼
+ Exchange (Topic)
+   │
+   ├── Binding key: order.*
+   │        │
+   │        └── Queue: OrderQueue
+   │
+   ├── Binding key: stock.# 
+   │        │
+   │        └── Queue: StockQueue
+   │
+   ▼
+Mesaj routing key: order.created → OrderQueue
+Mesaj routing key: stock.updated.status → StockQueue
+```
+
+### 📌 Real Həyat Ssenarisi:
+
+Scenario:
+    - OrderService mesaj göndərir:
+        - Routing key: order.created
+        - StockService binding key: order.*
+        - InvoiceService binding key: order.created
+Neticə:
+- order.created mesajı həm StockQueue, həm də InvoiceQueue-ya yönləndiriləcək.
+
+### 📌 Nəticə
+```java
+Term	                 İzah
+Routing Key	             Producer-in göndərdiyi mesaj üçün Exchange-ə hansı Queue-ya getməli olduğunu bildirən açar.
+Pattern Matching	     Topic Exchange-də routing key-lərin * və # simvolları ilə pattern-lərə uyğunlaşdırılması.
+```
+
+---
+
+## 
