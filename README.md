@@ -20,8 +20,7 @@ All about RabbitMQ
 16. [RabbitMQ Management Plugin və UI istifadə qaydası](#-rabbitmq-management-plugin-və-ui-istifadə-qaydası)
 17. [Security: User, Permission və TLS](#-security-user-permission-və-tls)
 18. [Monitoring və Metrics (Prometheus, Grafana inteqrasiyası)](#-monitoring-və-metrics-prometheus-grafana-inteqrasiyası)
-19. [Cluster və High Availability (HA) Konfiqurasiyası](#-cluster-və-high-availability-ha-konfiqurasiyası)
-20. [RabbitMQ Performans Tuning və Best Practices](#-rabbitmq-performans-tuning-və-best-practices)
+19. [RabbitMQ Performans Tuning və Best Practices](#-rabbitmq-performans-tuning-və-best-practices)
 
 ---
     
@@ -1626,3 +1625,306 @@ rabbitmqctl set_permissions -p my_vhost yeni_user ".*" ".*" ".*"
 | **Virtual Host**          | İstifadəçi və tətbiqləri izolyasiya etmək                |
 
 ---
+
+## <img src="https://github.com/user-attachments/assets/6cf7ce46-9640-4f9b-9f8f-0433222063d8" width="50px">  Monitoring və Metrics (Prometheus, Grafana inteqrasiyası)
+
+### 📌 RabbitMQ Monitoring və Metrics Nədir?
+- RabbitMQ-da serverin sağlamlığı, message trafiki, queue doluluğu, consumer statusu, connection sayı, acknowledgment gecikməsi və s. kimi məlumatları real-time və ya history olaraq izləmək üçün monitoring        sistemləri istifadə olunur.
+
+### 📌 RabbitMQ-da Monitoring üsulları:
+- 1️⃣ RabbitMQ Management Plugin (built-in UI)
+- 2️⃣ Prometheus Exporter + Prometheus + Grafana (pro səviyyəsində)
+
+### 📌 Prometheus və Grafana İnteqrasiyası
+- 📦 Prometheus nədir?
+    - → Time-series data toplayıb saxlama və query etmə sistemi.
+    - → RabbitMQ-nun metriklərini çəkib toplayır.
+
+- 📦 Grafana nədir?
+    - → Prometheus-dan gələn metrikləri dashboard və vizual qrafik halında göstərən open-source monitorinq və analiz platformasıdır.
+ 
+### 📌 RabbitMQ → Prometheus Exporter → Prometheus → Grafana
+
+#### 📌 1️⃣ RabbitMQ Prometheus Exporter quraşdırmaq
+
+- RabbitMQ server-də Prometheus üçün exporter plugin əlavə edirsən:
+
+```bash
+rabbitmq-plugins enable rabbitmq_prometheus
+```
+
+- Bu zaman RabbitMQ metrics endpoint açır:
+
+```bash
+http://localhost:15692/metrics
+```
+
+- Bu endpoint-dən Prometheus metricsləri scrape edəcək.
+
+#### 📌 2️⃣ Prometheus Konfiqurasiyası
+
+- Prometheus-un `prometheus.yml` faylına RabbitMQ exporter-in endpointini əlavə et:
+
+```yaml
+scrape_configs:
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['localhost:15692']
+```
+
+- Prometheus-u restart et:
+
+```bash
+./prometheus --config.file=prometheus.yml
+```
+
+#### 📌 3️⃣ Grafana İnteqrasiyası
+
+- Grafana Web UI → Add Data Source → Prometheus seç → Prometheus URL:
+
+```arduino
+http://localhost:9090
+```
+
+- Dashboard əlavə etmək üçün:
+
+    - Grafana Marketplace-dən RabbitMQ üçün hazır dashboard ID-lərini import edə bilərsən.
+      → Məsələn: RabbitMQ Overview dashboard ID: 10991
+      və ya RabbitMQ üçün öz panelini düzəldə bilərsən.
+
+### 📌 Ən önəmli RabbitMQ Metrics-lər:
+
+| Metrik                                   | İzah                                                            |
+| :--------------------------------------- | :-------------------------------------------------------------- |
+| `rabbitmq_queue_messages_ready`          | Queue-da gözləyən mesaj sayı                                    |
+| `rabbitmq_queue_messages_unacknowledged` | Consumer-lar tərəfindən alınmış, lakin ack olunmamış mesaj sayı |
+| `rabbitmq_queue_messages`                | Queue-da ümumi mesaj sayı                                       |
+| `rabbitmq_connections`                   | RabbitMQ-da aktiv bağlantı sayı                                 |
+| `rabbitmq_channels`                      | Aktiv channel sayı                                              |
+| `rabbitmq_consumers`                     | Consumer sayı                                                   |
+
+### 📌 RabbitMQ Monitoring üçün Tam Setup Flow:
+
+```scss
+RabbitMQ
+   │
+   │ (metrics, /metrics endpoint)
+   │
+Prometheus Exporter (rabbitmq_prometheus plugin)
+   │
+   │ (scrape configs)
+   │
+Prometheus (metrics database)
+   │
+   │ (query & time-series data)
+   │
+Grafana (dashboards və vizual qrafiklər)
+
+```
+
+### 📌 Nəticə:
+
+| Komponent                      | Rol                                            |
+| :----------------------------- | :--------------------------------------------- |
+| **RabbitMQ Management Plugin** | Sadə Web UI izləmə                             |
+| **Prometheus Exporter**        | Metrikləri Prometheus formatında çıxarır       |
+| **Prometheus**                 | Metrikləri toplayıb saxlayır                   |
+| **Grafana**                    | Prometheus-dan gələn datanı vizualizasiya edir |
+
+### 📌 Docker ile bunu etmek
+
+- 📦 docker-compose.yml — Full Monitoring Stack
+
+```yaml
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+      - "15692:15692"  # Prometheus exporter portu
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - monitoring-net
+    command: >
+      bash -c "rabbitmq-plugins enable --offline rabbitmq_prometheus &&
+               rabbitmq-server"
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring-net
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - monitoring-net
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+volumes:
+  rabbitmq_data:
+  grafana_data:
+
+networks:
+  monitoring-net:
+    driver: bridge
+```
+
+
+- 📦 prometheus.yml — Prometheus konfiqurasiya faylı
+    - Bu faylı docker-compose.yml ilə eyni qovluqda saxla:
+
+```yaml
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq:15692']
+```
+
+### 📌 Başlatmaq:
+
+```bash
+docker-compose up -d
+```
+
+### 📌 İstifadə Linkləri:
+
+| Servis              | URL                                                            |
+| :------------------ | :------------------------------------------------------------- |
+| RabbitMQ Management | [http://localhost:15672](http://localhost:15672) → admin/admin |
+| Prometheus UI       | [http://localhost:9090](http://localhost:9090)                 |
+| Grafana UI          | [http://localhost:3000](http://localhost:3000) → admin/admin   |
+
+
+### 📌 Grafana-da Dashboard Import:
+
+1. Grafana Web UI → Dashboards → Import
+2. Marketplace-dən RabbitMQ dashboard id: 10991 yaz
+3. Prometheus datasource seç və import et ✅
+
+### 📌 Qısa Overview:
+- RabbitMQ → 5672 (AMQP), 15672 (UI), 15692 (Prometheus exporter)
+- Prometheus → 9090 (metrics query və monitor)
+- Grafana → 3000 (dashboard)
+
+---
+
+## <img src="https://github.com/user-attachments/assets/fa8185f4-986a-471b-a548-5999939a6dbd" width="50px"> RabbitMQ Performans Tuning və Best Practices
+
+### 📌 RabbitMQ Performans Tuning Parametrləri
+
+- 1️⃣ Disk və I/O Performansı
+    - RabbitMQ disk heavy broker-dir, mesajlar və metadata çox zaman diskə yazılır.
+    - SSD istifadə et.
+    - Disk latency < 1 ms olmalı.
+ 
+- 2️⃣ File Descriptors
+    - Hər bağlantı üçün open file descriptor tələb olunur.
+    - OS səviyyəsində limit artırılmalı.
+ 
+- 3️⃣ Queue Sayını Azalt
+    - Çox sayda queue → performansı aşağı salar.
+    - Əgər mümkün olsa, az queue, çox consumer yanaşması saxla.
+ 
+- 4️⃣ Message Size
+    - Mesaj ölçüsü 100KB-dan yuxarı olmamalı.
+    - Çox böyük datanı mesajla göndərmək əvəzinə external storage istifadə et (məs. S3) və link göndər.
+ 
+- 5️⃣ Batch Acknowledgment
+    - Hər mesaj üçün ayrı acknowledgment əvəzinə batch ilə təsdiqləmə istifadə et.
+    - Java/Spring Boot nümunəsi:
+ 
+```java
+channel.basicAck(deliveryTag, true); // multiple=true
+```
+
+- 6️⃣ Consumer Prefetch Limit
+    - Consumer-ə eyni anda neçə mesaj göndərilə bilər deyə limit qoy.
+ 
+- Nümunə:
+
+```java
+channel.basicQos(10);
+```
+
+- → Eyni anda 10 mesaj göndər.
+
+### 📌 RabbitMQ Best Practices
+
+- ✅ Connection Pooling istifadə et
+    - Bir application üçün çoxlu connection yaratmaq əvəzinə, connection pool qur.
+ 
+- ✅ Dedicated Network
+    - Broker-lər üçün xüsusi network subnet istifadə et (Docker-da internal: true network).
+
+- ✅ DLQ və Retry mexanizmi
+    - Hər queue üçün DLQ konfiqurasiya et. Retry mexanizmi ilə transient error-ları idarə et.
+
+- ✅ Monitoring
+    - Həmişə Prometheus + Grafana və ya RabbitMQ Management Plugin ilə metrikləri izləyin:
+        - queue depth
+        - unacked message
+        - consumer count
+        - connection sayısı
+        - disk latency
+     
+- ✅ Producer və Consumer Load Balancing
+    - Multiple producer və consumer-lar yerləşdir.
+    - Horizontal scaling → container sayını artırmaqla.
+
+- ✅ Mirrored Queue (HA) çox istifadə etmə.
+    - Yalnız critical queue-ları mirror et. Çünki every mirror = 2x network + disk load.
+
+- ✅ TTL (Time To Live)
+    - Mesaj və ya queue üçün TTL təyin et.
+    - Lazımsız mesajlar sistemdə qalıb yük salmasın.
+
+- Nümunə:
+
+```json
+{"x-message-ttl":60000}
+```
+
+- → 60 saniyə sonra mesaj silinsin.
+
+### 📊 Vacib Monitor Metriklər
+
+| Metrik                          | İzah                                            |
+| :------------------------------ | :---------------------------------------------- |
+| `queue_messages_ready`          | Göndərilməmiş mesaj sayı                        |
+| `queue_messages_unacknowledged` | Consumer-ə göndərilmiş, ack gəlməyən mesaj sayı |
+| `connections`                   | Aktiv bağlantı sayı                             |
+| `disk_free`                     | Boş disk sahəsi                                 |
+| `memory_used`                   | İstifadə olunan RAM                             |
+
+
+### 📌 Nəticə:
+
+- Performansı artırmaq üçün:
+    - ✅ Disk və RAM-ı optimallaşdır
+    - ✅ Mesaj ölçüsünü idarə et
+    - ✅ Prefetch və batch acknowledgment istifadə et
+    - ✅ DLQ və Retry mexanizmi qur
+    - ✅ Monitoring quraraq hər dəqiqə sistem sağlamlığını yoxla
+    - ✅ Lazy queue və TTL tətbiq et
+ 
+ ---
