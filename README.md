@@ -1,6 +1,5 @@
-# RabbitMQ-Deep-Dive
+# <img src="https://www.google.com/imgres?q=rabbitmq&imgurl=https%3A%2F%2Fwww.meshiq.com%2Fwp-content%2Fuploads%2Frabbitmq.png&imgrefurl=https%3A%2F%2Fwww.meshiq.com%2Frabbitmq%2F&docid=oD8V8xupmbs23M&tbnid=z4Jd-yt9UG_oaM&vet=12ahUKEwjmpuPE1oaNAxXsPxAIHe_UBnQQM3oECBsQAA..i&w=1000&h=563&hcb=2&ved=2ahUKEwjmpuPE1oaNAxXsPxAIHe_UBnQQM3oECBsQAA" width="50px"> RabbitMQ-Deep-Dive
 All about RabbitMQ
-
 
 ## Mündəricat (Table of Contents)
 1. [RabbitMQ nədir? (What is RabbitMQ?)](#-rabbitmq-nədir-what-is-rabbitmq)
