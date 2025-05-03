@@ -729,8 +729,9 @@ Producer → Exchange → Queue → Consumer
 
 ```css
 Növ	             İzah	                                 Risk
+--------------------------------------------------------------------------------
 Auto ACK	     Mesaj alınan kimi təsdiqlənir.	         İtki riski var.
 Manual ACK	     İşlədikdən sonra təsdiqlənir.	         Təhlükəsizdir.
 NACK	            İşləyə bilmədi, Queue-a və ya DLQ-ya.	 Təhlükəsizdir.
-Reject	         Tək mesaj üçün rədd və ya requeue.	     Təhlükəsizdir.
+Reject	           Tək mesaj üçün rədd və ya requeue.	     Təhlükəsizdir.
 ```
