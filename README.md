@@ -1403,10 +1403,226 @@ rabbitTemplate.send("exchange", "routingKey", message);
 | **Jackson2JsonMessageConverter**          | JSON formatlı obyektlər üçün                          |
 | **ContentTypeDelegatingMessageConverter** | Content-type-a əsaslanıb converter seçir              |
 
-###c 📌 Bonus: Niyə Jackson daha çox istifadə olunur?
+### 📌 Bonus: Niyə Jackson daha çox istifadə olunur?
 - ✅ JSON platformasından asılı deyil
 - ✅ İnsan oxuya bilir
 - ✅ Sistemlər arasında data ötürmək üçün ideal
 - ✅ Spring Boot-da default dəstəklənir
+
+---
+
+## <img src="https://github.com/user-attachments/assets/3abd8827-526c-487d-a7f0-afb5a2e9b131" width="50px">  RabbitMQ Management Plugin və UI istifadə qaydası
+
+### 📌 RabbitMQ Management Plugin nədir?
+
+- RabbitMQ Management Plugin — RabbitMQ üçün web əsaslı idarəetmə panelidir.
+- Bu panel vasitəsilə:
+    - Queue-ları,
+    - Exchange-ləri,
+    - Binding-ləri,
+    - Producer və Consumer-ləri,
+    - Mesajların vəziyyətini,
+    - DLQ-ları və s. vizual şəkildə idarə və izləmək mümkündür.
+ 
+### 📌 Web UI-a necə daxil olunur?
+
+- 👉 Default olaraq Web UI `http://localhost:15672` portunda işləyir.
+- Default istifadəçi adı və şifrə:
+    - username: guest
+    - password: guest
+- (Ancaq guest istifadəçisi yalnız localhost-dan daxil ola bilər)
+
+### 📌 RabbitMQ Web UI-da nələr var?
+
+- 📊 Dashboard
+    - Server status
+    - Node-ların durumu
+    - Mesaj sayı
+    - Connection sayı və load göstəriciləri
+- 📨 Queues
+    - Mövcud queue-ları görmək
+    - Queue yaratmaq
+    - Queue parametrlərini dəyişmək
+    - Queue-ya test mesajı göndərmək
+    - Queue-da olan mesajları vizual görmək və delete etmək
+- 🔀 Exchanges
+    - Mövcud exchange-ləri görmək
+    - Yeni exchange yaratmaq
+    - Binding-ləri vizual izləmək    
+    - Mesajları test göndərmək üçün interface
+- 🔗 Bindings
+    - Queue və Exchange-lər arasındakı bağlantıları göstərir
+    - Hansi routing key ilə hansı queue-ya yönləndiyini görə bilirsən
+- 👥 Users
+    - İstifadəçi yaratmaq
+    - İcazə vermək (permissions)
+    - User-ləri silmək və ya şifrəsini dəyişmək
+- 🌐 Connections & Channels
+    - Mövcud connection-ları və consumer-ləri izləmək
+    - Hər channel-in statistikasını görmək
+
+ ### 📌 Yeni Queue və ya Exchange necə əlavə olunur?
+
+ - Web UI → Queues → Add a new queue
+
+- Burada:
+    - Queue name
+    - Durability
+    - Auto-delete
+    - Arguments (DLQ, TTL və s. üçün) qeyd edib Add queue düyməsini klik edirsən.
+ 
+- Eyni şəkildə: Exchanges → Add a new exchange
+- Burada:
+- Exchange adı
+- Növü (Direct, Fanout, Topic, Headers)
+- Durability və Auto-delete seçimi qeyd olunur.
+
+### 📌 Mesaj göndərmək və test etmək
+
+- Exchanges bölməsində:
+1. Hər hansı exchange seç
+2. "Publish message" bölməsinə gir
+3. Routing key və mesajı yaz
+4. Content-type və properties daxil et
+5. Publish düyməsini sıx
+- Queue-da həmin mesajı izləyə bilirsən.
+
+### 📌 DLQ və Retry-ləri izləmək
+
+- DLQ queue-ları ayrıca Queue bölməsində görsənir
+- Mesaj sayını, vəziyyətini və move-to, delete əmrlərini tətbiq edə bilərsən
+
+### 📌 RabbitMQ Management UI-nin üstünlükləri
+- ✅ Real-time monitorinq
+- ✅ Manual test mesaj göndərmək
+- ✅ Queue və Exchange-ləri vizual idarə etmək
+- ✅ Connection və Channel-ları izləmək
+- ✅ DLQ və Retry proseslərini izləmək
+- ✅ User və Permission idarəsi
+
+### 📌 Docker ilə RabbitMQ Management UI
+
+- Əgər Docker istifadə edirsənsə:
+
+```docker
+docker run -d --hostname rabbit-host --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+```
+
+- Bu komanda ilə Management Plugin-lə `RabbitMQ` konteyneri açılır və `http://localhost:15672` üzərindən girə bilirsən.
+
+### 📌 Nəticə
+
+| İmkan                                | İzah                                                       |
+| :----------------------------------- | :--------------------------------------------------------- |
+| **Queue və Exchange idarəsi**        | Vizual queue və exchange yaratmaq                          |
+| **Mesaj göndərmək və izləmək**       | Web interfeysdən test mesaj göndərmək və queue monitorinqi |
+| **DLQ və Retry idarəsi**             | DLQ queue-larını vizual izləmək                            |
+| **Connection və Channel monitorinq** | Canlı bağlantıları izləmək                                 |
+| **User və Permission idarəsi**       | Web UI üzərindən user yaratmaq və icazə vermək             |
+
+---
+
+## <img src="https://github.com/user-attachments/assets/367f05da-1faf-4062-a65d-8ae0da83b7f6" width="50px">  Security: User, Permission və TLS
+
+### 📌 RabbitMQ Security Nədir?
+- RabbitMQ-da təhlükəsizlik sistemi authentication, authorization və communication security (TLS) üzərində qurulub:
+    - 1️⃣ Authentication (kimlik yoxlaması)
+    - 2️⃣ Authorization (icazə idarəsi)
+    - 3️⃣ TLS (şifrələnmiş bağlantı)
+
+#### 📌 1️⃣ User və Authentication
+
+- RabbitMQ-da hər bir istifadəçi username və password ilə tanıdılır.
+
+- 📦 İstifadəçi yaratmaq:
+- Terminalda:
+
+```bash
+rabbitmqctl add_user yeni_user yeni_password
+```
+
+- 📦 İstifadəçini silmək:
+
+```bash
+rabbitmqctl delete_user yeni_user
+```
+
+#### 📌 2️⃣ Permission və Authorization
+
+- Hər user-in hansı virtual host-da hansı exchange və queue-lara nə tip əməliyyat edə biləcəyini təyin etmək olur.
+- Permission-lar 3 hissəyə bölünür:
+    - Configure — Exchange və Queue-ları yaratmaq, dəyişmək
+    - Write — Mesaj göndərmək
+    - Read — Mesaj oxumaq və Queue-dan götürmək
+ 
+- 📦 Permission vermək:
+
+```bash
+rabbitmqctl set_permissions -p / virtual_host yeni_user ".*" ".*" ".*"
+```
+
+- Burda:
+    - `-p /` → virtual host
+    - `.*` → Regex pattern (hər şeyi icazə verir)
+ 
+- Məhdudlaşdırmaq üçün:
+
+```bash
+rabbitmqctl set_permissions -p / my_vhost yeni_user "^queue_name$" "^exchange_name$" "^queue_name$"
+```
+
+#### 📌 3️⃣ TLS (Transport Layer Security)
+
+- RabbitMQ default olaraq plain TCP istifadə edir.
+- `TLS` (SSL) ilə RabbitMQ bağlantılarını şifrələmək mümkündür.
+
+- 📦 TLS konfiqurasiyası üçün:
+- `rabbitmq.conf faylında:`
+```properties
+listeners.ssl.default = 5671
+
+ssl_options.cacertfile = /path/to/ca_certificate.pem
+ssl_options.certfile   = /path/to/server_certificate.pem
+ssl_options.keyfile    = /path/to/server_key.pem
+ssl_options.verify     = verify_peer
+ssl_options.fail_if_no_peer_cert = true
+```
+
+- 📦 Portlar:
+    - 5672 — plain TCP
+    - 5671 — TLS ilə şifrələnmiş bağlantı
+
+### 📌 Virtual Host-lar
+
+- RabbitMQ-da Virtual Host (vhost) — izolyasiya mühitidir.
+- Fərqli tətbiqlər və istifadəçilər üçün ayrıca virtual host-lar yaradıla və permission-lar ona görə verilə bilər.
+
+- 📦 Vhost yaratmaq:
+
+```bash
+rabbitmqctl add_vhost my_vhost
+```
+
+- 📦 User-i Vhost-a icazə vermək:
+
+```bash
+rabbitmqctl set_permissions -p my_vhost yeni_user ".*" ".*" ".*"
+```
+
+### 📌 Management UI ilə Security idarəsi
+
+- Web UI-dan:
+    - Admin bölməsində user-ləri yaratmaq
+    - Hər user üçün virtual host permission-ları təyin etmək
+    - TLS bağlantılarının statusunu izləmək olur
+
+### 📌 Nəticə
+ 
+| Təhlükəsizlik Mexanizmi   | İzah                                                     |
+| :------------------------ | :------------------------------------------------------- |
+| **User Authentication**   | RabbitMQ-da istifadəçi hesabları yaratmaq                |
+| **Permission Management** | İstifadəçiyə hansı əməliyyatı edə biləcəyini təyin etmək |
+| **TLS Encryption**        | Mesaj və bağlantıları şifrələmək                         |
+| **Virtual Host**          | İstifadəçi və tətbiqləri izolyasiya etmək                |
 
 ---
