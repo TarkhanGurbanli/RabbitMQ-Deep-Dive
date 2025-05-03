@@ -466,3 +466,5 @@ Consumer	Queue-dan mesajı alır və emal edir.
 ```
 
 ---
+
+## <img src="https://github.com/user-attachments/assets/9bf57544-1b68-4b0e-a38f-f08231b2ba72" width="50px"> ##Routing Key və Pattern Matching
