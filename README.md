@@ -1109,7 +1109,7 @@ args.put("x-message-ttl", 5000); // 5 saniyə
 
 ---
 
-## <img src="[https://github.com/user-attachments/assets/8b554438-76d4-4306-a75b-73d090fc9426](https://github.com/user-attachments/assets/b3413a0d-187d-4271-8a46-843ae4296fff)" width="50px">  Fanout, Direct, Topic və Headers exchange misalları
+## <img src="https://github.com/user-attachments/assets/8b554438-76d4-4306-a75b-73d090fc9426](https://github.com/user-attachments/assets/b3413a0d-187d-4271-8a46-843ae4296fff" width="50px">  Fanout, Direct, Topic və Headers exchange misalları
 
 ### 📌 RabbitMQ Exchange Nədir?
 
@@ -1294,5 +1294,119 @@ rabbitTemplate.send("headers-exchange", "", message);
     - `Direct` → dəqiq yönləndirmə
     - `Topic` → pattern-lə dinamik yönləndirmə
     - `Headers` → header-larla şərti yönləndirmə
+
+---
+
+## <img src="https://github.com/user-attachments/assets/ea25c00d-2cce-40aa-90ac-1d3c01d73a8b" width="50px">  Message Converter və Serialization
+
+### 📌 Message Converter və Serialization nədir?
+
+- RabbitMQ-da biz obyektləri və ya məlumatları mesaj şəklində göndəririk. Bu mesajlar isə byte array şəklində RabbitMQ-da saxlanılır və ötürülür.
+- Burada:
+    - `Serialization` — obyektin byte array-ə çevrilməsi prosesidir.
+    - `Deserialization` — byte array-in təkrar obyektə çevrilməsi.
+- Message Converter isə — bu çevirmə prosesini idarə edən komponentdir.
+
+### 📌 Niyə Message Converter lazımdır?
+
+- 👉 RabbitMQ yalnız byte array göndərə və ala bilir.
+- 👉 Biz Java obyektlərini göndərmək istəyirik.
+- 👉 Bunu etmək üçün:
+    - Obyekti serializasiya edirik (mesaja çeviririk).
+    - Mesaj gəldikdə isə deserializasiya edib obyekt halına salırıq.
+- Bu çevirməni isə Message Converter edir.
+
+### 📌 Spring Boot-da Message Converter Növləri
+
+- Spring Boot RabbitMQ integration-da bir neçə converter mövcuddur:
+
+| Converter                                 | Təsvir                                                  |
+| :---------------------------------------- | :------------------------------------------------------ |
+| **SimpleMessageConverter**                | String, byte\[], Serializable obyektləri serialize edir |
+| **Jackson2JsonMessageConverter**          | Java obyektləri JSON-a və ya JSON-dan çevirir           |
+| **ContentTypeDelegatingMessageConverter** | ContentType-a əsaslanaraq converter seçir               |
+
+### 📖 Məsələn: Jackson2JsonMessageConverter istifadə edək
+
+- 👉 Java obyektlərini JSON şəklində serialize edib göndərmək üçün Jackson istifadə edirik.
+
+#### 📌 Konfiqurasiya:
+```java
+@Configuration
+public class RabbitConfig {
+
+    @Bean
+    public MessageConverter jsonMessageConverter() {
+        return new Jackson2JsonMessageConverter();
+    }
+
+    @Bean
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
+        RabbitTemplate template = new RabbitTemplate(connectionFactory);
+        template.setMessageConverter(jsonMessageConverter());
+        return template;
+    }
+}
+```
+
+#### 📖 Producer İstifadəsi:
+```java
+User user = new User("Elvin", 22);
+rabbitTemplate.convertAndSend("exchange-name", "routing-key", user);
+```
+
+#### 📖 Consumer İstifadəsi:
+```java
+@RabbitListener(queues = "queue-name")
+public void receiveMessage(User user) {
+    System.out.println("Gelen user: " + user.getName());
+}
+```
+
+- Bu zaman automatik olaraq obyekt JSON-a çevrilir və geri obyektə deserialize olunur.
+
+### 📌 Serialization (Serializable) nədir?
+
+- Java-da bir obyektin byte stream-ə çevrilməsi üçün Serializable interfeysindən istifadə olunur.
+- Misal:
+
+```java
+public class User implements Serializable {
+    private String name;
+    private int age;
+}
+```
+
+- SimpleMessageConverter bu cür obyektləri serialize edib göndərə bilir. Amma JSON ilə işləmək daha çevik və rahatdır.
+
+### 📌 Message Properties
+
+- Mesaj göndərərkən, mesaja content-type, headers, priority və s. kimi əlavə məlumatlar da ötürmək olur.
+- Misal:
+
+```java
+MessageProperties props = new MessageProperties();
+props.setContentType("application/json");
+
+Message message = new Message("Salam".getBytes(), props);
+rabbitTemplate.send("exchange", "routingKey", message);
+```
+
+### 📌 Nəticə
+
+| Anlayış                                   | Təsvir                                                |
+| :---------------------------------------- | :---------------------------------------------------- |
+| **Serialization**                         | Obyekti byte array-ə çevirmək                         |
+| **Deserialization**                       | Byte array-dən obyekt yaratmaq                        |
+| **Message Converter**                     | Mesajları serialize/deserialze edən Spring komponenti |
+| **SimpleMessageConverter**                | String və Serializable obyektlər üçün                 |
+| **Jackson2JsonMessageConverter**          | JSON formatlı obyektlər üçün                          |
+| **ContentTypeDelegatingMessageConverter** | Content-type-a əsaslanıb converter seçir              |
+
+###c 📌 Bonus: Niyə Jackson daha çox istifadə olunur?
+- ✅ JSON platformasından asılı deyil
+- ✅ İnsan oxuya bilir
+- ✅ Sistemlər arasında data ötürmək üçün ideal
+- ✅ Spring Boot-da default dəstəklənir
 
 ---
