@@ -557,4 +557,180 @@ Pattern Matching	     Topic Exchange-də routing key-lərin * və # simvolları 
 
 ---
 
-## 
+## <img src="https://github.com/user-attachments/assets/1cf4879a-3043-45fa-a463-ddd7c2a058ac" width="50px">  Dead Letter Queue (DLQ) nədir və nə üçün istifadə olunur?
+
+### 📌 Dead Letter Queue (DLQ) nədir?
+- Dead Letter Queue (DLQ) — RabbitMQ-da və ümumiyyətlə mesajlaşma sistemlərində çatdırıla, işlənə və ya qəbul edilə bilməyən mesajların yönləndirildiyi xüsusi Queue-dur.
+
+Yəni:
+- Normal Queue-dan mesaj müəyyən səbəbdən işlənə bilmədikdə və ya rədd edildikdə, həmin mesaj DLQ-ya yönləndirilir.
+- Bu Queue, problemləri təhlil etmək və lazım gələrsə, həmin mesajları təkrar işləmək üçün istifadə olunur.
+
+### 📌 DLQ nə üçün istifadə olunur?
+- 1️⃣ İşlənə Bilməyən Mesajların Saxlanması üçün
+    - Mesaj Consumer tərəfindən qəbul edilmir və ya səhv baş verir.
+- 2️⃣ Retry Mexanizmi Tətbiq Etmək üçün
+    - DLQ-dakı mesajlar sonradan xüsusi bir servis vasitəsilə yenidən əsas Queue-a göndərilə bilər.
+- 3️⃣ Sistem Təhlükəsizliyi və Stabil İdarəetmə üçün
+    - Problemli mesajlar əsas Queue-dan çıxarılaraq DLQ-ya ötürülür, beləliklə sistem tıxanmaz.
+- 4️⃣ Monitorinq və Debug məqsədilə
+    - DLQ-da saxlanılan mesajlar problemi araşdırmaq və sistemdəki çatışmazlıqları tapmaq üçün istifadə olunur. 
+
+### 📌 Mesajların DLQ-ya düşmə səbəbləri:
+- 🔸 Message TTL (Time-To-Live) aşılması
+    - Mesaj Queue-da müəyyən vaxt ərzində işlənməzsə və vaxtı bitərsə.
+- 🔸 Queue dolarsa (max-length aşılırsa)
+    - Queue dolu olduqda yeni mesajlar DLQ-ya yönləndirilə bilər.
+- 🔸 Consumer mesajı rədd edərsə (Reject/Nack)
+    - Mesaj işlənərkən Consumer basic.reject və ya basic.nack göndərib requeue=false etsə.
+- 🔸 Routing qaydasına görə
+    -  Mesaj Exchange-də heç bir Queue-ya uyğun gəlmədikdə və Alternate Exchange qurulmayıbsa.
+
+### 📌 DLQ necə işləyir? (İş Axını)
+
+- 1️⃣ Mesaj əsas Queue-ya gəlir.
+- 2️⃣ Consumer mesajı qəbul edir.
+- 3️⃣ Hər hansı səbəbdən:
+    - Mesaj reject olunur.
+    - TTL bitir.
+    - Queue dolur.
+- 4️⃣ Mesaj Dead Letter Exchange-ə (DLX) göndərilir.
+- 5️⃣ DLX bu mesajı Dead Letter Queue-a yönləndirir.
+
+### 📌 DLQ üçün Konfiqurasiya Nümunəsi:
+
+Queue yaradanda dead-letter-exchange və dead-letter-routing-key parametrləri təyin olunur.
+Misal (RabbitMQ Management UI və ya kodla):
+    ```java
+        Arguments:
+        "x-dead-letter-exchange": "my-dlx"
+        "x-dead-letter-routing-key": "dead.order"
+    ```
+
+### 📌 Real Həyat Ssenarisi:
+
+- Scenario:
+    - OrderService order.created mesajı göndərir.
+    - StockService bu mesajı işləyir.
+    - Əgər StockService uğursuzluqla nəticələnərsə və basic.reject edərsə, mesaj DLX-ə gedir.
+    - DLX bu mesajı DeadOrderQueue-a yönləndirir.
+
+### 📌 DLQ və DLX Əlaqəsi:
+
+```java
+Komponent	                   İzah
+DLQ (Dead Letter Queue)	       Problemli mesajların toplandığı Queue.
+DLX (Dead Letter Exchange)	   Problemli mesajları DLQ-ya yönləndirən Exchange.
+```
+
+### 📌 Nəticə
+
+- DLQ mesajlaşma sistemlərinin etibarlı işləməsi və kritik səhvlərin idarə olunması üçün vacib mexanizmdir.
+- Sən problemləri DLQ-da toplayıb analiz edə və lazım gəlsə retry mexanizmi yaza bilərsən.
+- DLQ sistem performansını qoruyur, tıxacların və mesaj itkisi riskinin qarşısını alır.
+
+--- 
+
+## <img src="https://github.com/user-attachments/assets/ba9ca75d-182a-4d39-80f4-d4e298ba261b" width="50px">  Message Acknowledgment (Əlavə təsdiqləmə mexanizmi)
+
+### 📌 Message Acknowledgment nədir?
+
+- Message Acknowledgment (ACK) — Consumer tərəfindən mesajı uğurla aldığını və işlədiyini Broker-ə bildirmək üçün göndərilən təsdiq siqnalıdır.
+- Bu mexanizm RabbitMQ-da mesajların itkisinin qarşısını almaq və etibarlı çatdırılmanı təmin etmək üçün istifadə olunur.
+
+### 📌 Niyə lazımdır?
+
+- Çünki:
+    - Əgər Consumer mesajı alır, amma işləyərkən çökərsə və acknowledgment göndərməzsə, RabbitMQ həmin mesajı təkrar Queue-a qaytarır.
+    - Beləliklə, mesaj ya başqa Consumer tərəfindən, ya da yenidən həmin Consumer ayağa qalxdıqda işlənir.
+- Bu, at-least-once delivery (ən azı bir dəfə çatdırılma) zəmanəti verir.
+
+### 📌 ACK Mexanizminin Növləri:
+
+#### 📌 1️⃣ Automatic Acknowledgment
+
+- Consumer mesajı aldıqdan dərhal acknowledgment göndərir.
+- Əgər mesaj işlənərkən çökərsə, mesaj itə bilər.
+- Tövsiyə edilmir — etibarlı sistemlər üçün risklidir.
+
+```java
+channel.basicConsume(queueName, true, consumer);
+```
+- Burada true → auto-ack
+
+#### 📌 2️⃣ Manual Acknowledgment
+
+- Consumer mesajı işlətdikdən sonra özü acknowledgment göndərir.
+- Əgər işləmə zamanı problem olsa, acknowledgment göndərilmədiyi üçün mesaj Queue-da qalır və ya təkrar yönləndirilir.
+
+```java
+channel.basicConsume(queueName, false, consumer);
+...
+channel.basicAck(deliveryTag, false);
+```
+
+- Burada false → manual-ack
+
+### 📌 NACK və Reject
+
+- Əgər mesaj işlənə bilməzsə:
+
+#### 📌 NACK (Negative Acknowledgment)
+
+- Consumer mesajı işləyə bilmədiyini bildirir.
+- İstəyinə görə:
+    - `requeue = true` → Mesaj Queue-a geri qoyulur.
+    - `requeue = false` → Mesaj DLQ-ya gedir (əgər DLX təyin olunubsa).
+
+ ```java
+channel.basicNack(deliveryTag, false, true);
+```
+
+### 📌 Reject
+
+- Tək bir mesaj üçün NACK kimidir.
+- Sadəcə həmin mesajı ya requeue, ya da DLQ-ya göndərir.
+
+```java
+channel.basicReject(deliveryTag, false);
+```
+
+### 📌 ACK İş Axını:
+
+```css
+Producer → Exchange → Queue → Consumer 
+                      │
+               (mesajı alır)
+                      │
+          İşləndimi? —►  Bəli → ACK → Mesaj silinir
+                           Xeyr → NACK/Reject → DLQ və ya Queue-a qayıdış
+```
+
+### 📌 Real Həyat Ssenarisi:
+
+- Scenario:
+    - PaymentService mesaj alır.
+    - Ödəniş işlənir.
+    - Əgər uğurludursa:
+        - `basicAck` göndərir.
+    - Əgər bank sistemi bağlıdırsa:
+        - `basicNack` ilə requeue edir.
+    - Əgər istifadəçi kartı blokdursa:
+        - `basicReject` ilə DLQ-ya göndərir.
+
+### 📌 Message Acknowledgment Faydaları:
+
+- ✅ Mesaj itkisinin qarşısını alır.
+- ✅ Çökən consumer-lər zamanı mesajları qoruyur.
+- ✅ Retry və DLQ mexanizmləri ilə inteqrasiya olunur.
+- ✅ Etibarlı və sabit mesajlaşma infrastrukturu yaradır.
+
+### 📌 Nəticə
+
+```java
+Növ	             İzah	                                 Risk
+Auto ACK	     Mesaj alınan kimi təsdiqlənir.	         İtki riski var.
+Manual ACK	     İşlədikdən sonra təsdiqlənir.	         Təhlükəsizdir.
+NACK	         İşləyə bilmədi, Queue-a və ya DLQ-ya.	 Təhlükəsizdir.
+Reject	         Tək mesaj üçün rədd və ya requeue.	     Təhlükəsizdir.
+```
