@@ -13,17 +13,15 @@ All about RabbitMQ
 9. [Dead Letter Queue (DLQ) nədir və nə üçün istifadə olunur?](#-dead-letter-queue-dlq-nədir-və-nə-üçün-istifadə-olunur)
 10. [Message Acknowledgment (Əlavə təsdiqləmə mexanizmi)](#-message-acknowledgment-əlavə-təsdiqləmə-mexanizmi)
 11. [Durability və Persistence anlayışları](#-durability-və-persistence-anlayışları)
-12. [Spring Boot ilə RabbitMQ konfiqurasiyası](#-spring-boot-ilə-rabbitmq-konfiqurasiyası)
-13. [Basic Producer və Consumer tətbiqləri](#-basic-producer-və-consumer-tətbiqləri)
-14. [Retry mexanizmi və Error Handling](#-retry-mexanizmi-və-error-handling)
-15. [DLQ ilə işləmək (DLQ Handling)](#-dlq-ilə-işləmək-dlq-handling)
-16. [Fanout, Direct, Topic və Headers exchange misalları](#-fanout-direct-topic-və-headers-exchange-misalları)
-17. [Message Converter və Serialization](#-message-converter-və-serialization)
-18. [RabbitMQ Management Plugin və UI istifadə qaydası](#-rabbitmq-management-plugin-və-ui-istifadə-qaydası)
-19. [Security: User, Permission və TLS](#-security-user-permission-və-tls)
-20. [Monitoring və Metrics (Prometheus, Grafana inteqrasiyası)](#-monitoring-və-metrics-prometheus-grafana-inteqrasiyası)
-21. [Cluster və High Availability (HA) Konfiqurasiyası](#-cluster-və-high-availability-ha-konfiqurasiyası)
-22. [RabbitMQ Performans Tuning və Best Practices](#-rabbitmq-performans-tuning-və-best-practices)
+12. [Retry mexanizmi və Error Handling](#-retry-mexanizmi-və-error-handling)
+13. [DLQ ilə işləmək (DLQ Handling)](#-dlq-ilə-işləmək-dlq-handling)
+14. [Fanout, Direct, Topic və Headers exchange misalları](#-fanout-direct-topic-və-headers-exchange-misalları)
+15. [Message Converter və Serialization](#-message-converter-və-serialization)
+16. [RabbitMQ Management Plugin və UI istifadə qaydası](#-rabbitmq-management-plugin-və-ui-istifadə-qaydası)
+17. [Security: User, Permission və TLS](#-security-user-permission-və-tls)
+18. [Monitoring və Metrics (Prometheus, Grafana inteqrasiyası)](#-monitoring-və-metrics-prometheus-grafana-inteqrasiyası)
+19. [Cluster və High Availability (HA) Konfiqurasiyası](#-cluster-və-high-availability-ha-konfiqurasiyası)
+20. [RabbitMQ Performans Tuning və Best Practices](#-rabbitmq-performans-tuning-və-best-practices)
 
 ---
     
@@ -820,3 +818,138 @@ Persistence	    Mesajlara	        Persistent mesajlar saxlanır
 - ✅ Hər ikisini birlikdə istifadə etmək etibarlı sistem dizaynı üçün mütləqdir.
 
 --- 
+
+## <img src="https://github.com/user-attachments/assets/d7e1ac77-d9a5-47d9-b050-73886f41d6f0" width="50px">  Retry mexanizmi və Error Handling
+
+### 📌 Retry mexanizmi nədir?
+
+- Retry — mesajın Consumer tərəfindən işlənməsində problem çıxanda, həmin mesajın müəyyən qədər yenidən cəhd edilməsi prosesidir.
+- Məsələn:
+
+- Consumer mesajı götürür.
+- İşləyərkən exception çıxır.
+- Retry policy varsa, həmin mesaj müəyyən say və interval ilə təkrar işlənir.
+
+### 📌 Spring Boot-da Retry üçün 2 əsas üsul:
+
+- 🔸 1️⃣ Listener səviyyəsində `@Retryable` ilə
+- 🔸 2️⃣ `RetryTemplate` və ya `SimpleRabbitListenerContainerFactory` ilə global konfiqurasiya
+
+### 📌 1️⃣ Listener səviyyəsində `@Retryable`
+
+- Consumer Service:
+```java
+@Service
+public class MessageConsumer {
+
+    @RabbitListener(queues = RabbitMQConfig.QUEUE_NAME)
+    @Retryable(
+        value = { Exception.class },
+        maxAttempts = 3,
+        backoff = @Backoff(delay = 2000) // 2 saniyə aralıqla
+    )
+    public void receiveMessage(String message) {
+        System.out.println("Mesaj gəldi: " + message);
+        if (message.contains("error")) {
+            throw new RuntimeException("Xəta baş verdi!");
+        }
+        System.out.println("Mesaj uğurla icra olundu.");
+    }
+
+    @Recover
+    public void recover(Exception e, String message) {
+        System.out.println("Mesaj Retry limitini keçdi. Recovery başladı: " + message);
+    }
+}
+```
+
+#### 📌 Burada:
+
+- `maxAttempts` → maksimum retry sayı
+- `@Backoff(delay = 2000)` → retry-lər arası gecikmə (ms)
+- `@Recover` → Retry limitindən sonra işləyəcək metod
+
+### 📌 2️⃣ Global Retry konfiqurasiyası (Container səviyyəsində)
+
+- `RabbitConfig.java`:
+```java
+@Configuration
+public class RabbitMQConfig {
+
+    // diger bean-lar...
+
+    @Bean
+    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory connectionFactory) {
+        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+        factory.setConnectionFactory(connectionFactory);
+
+        RetryInterceptorBuilder.StatelessRetryInterceptorBuilder retryInterceptor = RetryInterceptorBuilder.stateless()
+            .maxAttempts(5)
+            .backOffOptions(1000, 2.0, 10000); // delay, multiplier, max delay
+
+        factory.setAdviceChain(retryInterceptor.build());
+        return factory;
+    }
+}
+```
+
+#### 📌 Burada:
+
+- `maxAttempts` → maksimum cəhd sayı
+- `backOffOptions` →
+    - `1000` → ilk gecikmə 1 saniyə
+    - `2.0` → hər dəfə 2 qat artır
+    - `10000` → maksimum 10 saniyə gecikmə
+ 
+### 📌 Dead Letter Queue (DLQ) ilə Retry
+
+- Retry limitindən sonra hələ uğursuzdursa → RabbitMQ həmin mesajı DLQ-a yönləndirə bilər.
+- `Queue konfiqurasiyası`
+
+```java
+@Bean
+public Queue mainQueue() {
+    Map<String, Object> args = new HashMap<>();
+    args.put("x-dead-letter-exchange", "dlx-exchange");
+    args.put("x-dead-letter-routing-key", "dlq-routingKey");
+    return new Queue("main-queue", true, false, false, args);
+}
+
+@Bean
+public Queue deadLetterQueue() {
+    return new Queue("dlq-queue", true);
+}
+```
+
+- `DLX` və `Binding`
+```java
+@Bean
+public DirectExchange dlxExchange() {
+    return new DirectExchange("dlx-exchange");
+}
+
+@Bean
+public Binding dlqBinding() {
+    return BindingBuilder.bind(deadLetterQueue())
+        .to(dlxExchange())
+        .with("dlq-routingKey");
+}
+```
+
+- Beləliklə Retry limitindən sonra RabbitMQ mesajı DLQ-a göndərəcək → orda başqa Consumer işləyə bilər.
+
+### 📌 Error Handling (Xəta idarəsi)
+
+- Consumer içində istənilən error handling strategiyası tətbiq edə bilərsən:
+    - try-catch ilə
+    - `@Recover` metodu ilə
+    - Retry mexanizmi ilə birlikdə DLQ-a göndərməklə
+
+ ### 📌 Nəticə
+
+- ✅ Retry mexanizmi → Consumer uğursuz olsa, mesajı təkrar işləməyə imkan verir
+- ✅ @Retryable və RetryTemplate ilə qurulur
+- ✅ DLQ ilə Retry limiti aşan mesajlar təhlükəsiz şəkildə yönləndirilir
+- ✅ Error Handling → hər cəhd uğursuzluğunda loglama, bildiriş və ya DLQ opsiyası verir
+
+---
