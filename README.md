@@ -727,7 +727,7 @@ Producer → Exchange → Queue → Consumer
 
 ### 📌 Nəticə
 
-```java
+```css
 Növ	             İzah	                                 Risk
 Auto ACK	     Mesaj alınan kimi təsdiqlənir.	         İtki riski var.
 Manual ACK	     İşlədikdən sonra təsdiqlənir.	         Təhlükəsizdir.
