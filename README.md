@@ -134,6 +134,13 @@ AMQP protokolunda əsas anlayışlar:
 - Etibarlı və transaction əsaslı məlumat ötürülməsi
 - Retry və error handling imkanları
 
+| Ad           | Protokol   | Təyinat         |
+| :----------- | :--------- | :-------------- |
+| **RabbitMQ** | AMQP       | General-purpose |
+| **ActiveMQ** | AMQP + JMS | Enterprise      |
+| **Qpid**     | AMQP       | Apache Project  |
+
+
 ---
 
 ## <img src="https://github.com/user-attachments/assets/895ec9d6-54d3-4a0f-99b8-d6383b741514" width="50px"> RabbitMQ-nun Arxitekturası (RabbitMQ Architecture)
@@ -280,6 +287,14 @@ Yəni Producer mesajı Exchange-ə göndərir, Exchange isə routing key və bin
     - Mesajların hansı queue-ya getməli olduğunu müəyyən edir.
     - 4 fərqli növ var: Direct, Fanout, Topic, Headers
     - Hər biri fərqli ssenarilər üçün istifadə olunur və sistemi daha çevik və güclü edir.
+ 
+| Exchange Növü | Routing Key İstifadəsi | Yönləndirmə Qaydası                  | İstifadə Ssenarisi                  |
+| :------------ | :--------------------- | :----------------------------------- | :---------------------------------- |
+| **Direct**    | Var                    | Tam uyğun routing key                | Fərqli tip mesajları bölmək         |
+| **Fanout**    | Yox                    | Bütün queue-lara göndərir            | Broadcast və event yayımı           |
+| **Topic**     | Var                    | Pattern (wildcard `*`, `#`) əsasında | Çevik və pattern əsaslı yönləndirmə |
+| **Headers**   | Yox                    | Mesaj header-larına əsasən           | Metadata əsaslı routing             |
+
 
 ---
 
@@ -360,12 +375,11 @@ Scenario: OrderService sifariş yaradır və bu sifarişin StockService və Invo
 
 ### 📌 Nəticə
 
-```java
-// Komponent        	Vəzifəsi
-//-----------------------------------------------------------------------------------------------
-// Queue	            Mesajları müvəqqəti saxlayır və FIFO prinsipi ilə Consumer-lara ötürür.
-// Binding	            Exchange ilə Queue arasındakı routing qaydasını təyin edir.
-```
+| Komponent   | Vəzifəsi                                                                |
+| :---------- | :---------------------------------------------------------------------- |
+| **Queue**   | Mesajları müvəqqəti saxlayır və FIFO prinsipi ilə Consumer-lara ötürür. |
+| **Binding** | Exchange ilə Queue arasındakı routing qaydasını təyin edir.             |
+
 
 ---
 
@@ -456,11 +470,12 @@ Scenario:
 - Emal etdikdən sonra RabbitMQ-ya acknowledge göndərilir ki, mesaj uğurla işləndi.
 
 ### 📌 Nəticə
-```java
-Komponent	Vəzifəsi
-Producer	Mesaj yaradır və Exchange-ə göndərir.
-Consumer	Queue-dan mesajı alır və emal edir.
-```
+
+| Komponent    | Vəzifəsi                              |
+| :----------- | :------------------------------------ |
+| **Producer** | Mesaj yaradır və Exchange-ə göndərir. |
+| **Consumer** | Queue-dan mesajı alır və emal edir.   |
+
 
 ---
 
@@ -546,11 +561,12 @@ Neticə:
 - order.created mesajı həm StockQueue, həm də InvoiceQueue-ya yönləndiriləcək.
 
 ### 📌 Nəticə
-```java
-Term	                 İzah
-Routing Key	             Producer-in göndərdiyi mesaj üçün Exchange-ə hansı Queue-ya getməli olduğunu bildirən açar.
-Pattern Matching	     Topic Exchange-də routing key-lərin * və # simvolları ilə pattern-lərə uyğunlaşdırılması.
-```
+
+| Term                 | İzah                                                                                          |
+| :------------------- | :-------------------------------------------------------------------------------------------- |
+| **Routing Key**      | Producer-in göndərdiyi mesaj üçün Exchange-ə hansı Queue-ya getməli olduğunu bildirən açar.   |
+| **Pattern Matching** | Topic Exchange-də routing key-lərin `*` və `#` simvolları ilə pattern-lərə uyğunlaşdırılması. |
+
 
 ---
 
@@ -614,11 +630,11 @@ Misal (RabbitMQ Management UI və ya kodla):
 
 ### 📌 DLQ və DLX Əlaqəsi:
 
-```java
-Komponent	                   İzah
-DLQ (Dead Letter Queue)	       Problemli mesajların toplandığı Queue.
-DLX (Dead Letter Exchange)	   Problemli mesajları DLQ-ya yönləndirən Exchange.
-```
+| Komponent                      | İzah                                             |
+| :----------------------------- | :----------------------------------------------- |
+| **DLQ (Dead Letter Queue)**    | Problemli mesajların toplandığı Queue.           |
+| **DLX (Dead Letter Exchange)** | Problemli mesajları DLQ-ya yönləndirən Exchange. |
+
 
 ### 📌 Nəticə
 
@@ -724,14 +740,13 @@ Producer → Exchange → Queue → Consumer
 
 ### 📌 Nəticə
 
-```css
-Növ	             İzah	                                 Risk
---------------------------------------------------------------------------------
-Auto ACK	     Mesaj alınan kimi təsdiqlənir.	         İtki riski var.
-Manual ACK	     İşlədikdən sonra təsdiqlənir.	         Təhlükəsizdir.
-NACK	            İşləyə bilmədi, Queue-a və ya DLQ-ya.	 Təhlükəsizdir.
-Reject	           Tək mesaj üçün rədd və ya requeue.	     Təhlükəsizdir.
-```
+| Növ            | İzah                                  | Risk            |
+| :------------- | :------------------------------------ | :-------------- |
+| **Auto ACK**   | Mesaj alınan kimi təsdiqlənir.        | İtki riski var. |
+| **Manual ACK** | İşlədikdən sonra təsdiqlənir.         | Təhlükəsizdir.  |
+| **NACK**       | İşləyə bilmədi, Queue-a və ya DLQ-ya. | Təhlükəsizdir.  |
+| **Reject**     | Tək mesaj üçün rədd və ya requeue.    | Təhlükəsizdir.  |
+
 
 ---
 
@@ -794,12 +809,11 @@ Producer → Exchange → Durable Queue
 
 ### 📌 Fərq və Əlaqə:
 
-```css
-Anlayış	        Nəyə aiddir?	    Broker restart olarsa
------------------------------------------------------------------
-Durability	    Queue-nun özünə	    Queue saxlanır
-Persistence	    Mesajlara	        Persistent mesajlar saxlanır
-```
+| Anlayış         | Nəyə aiddir?    | Broker restart olarsa        |
+| :-------------- | :-------------- | :--------------------------- |
+| **Durability**  | Queue-nun özünə | Queue saxlanır               |
+| **Persistence** | Mesajlara       | Persistent mesajlar saxlanır |
+
 
 ### 📌 Real Həyat Ssenarisi:
 
