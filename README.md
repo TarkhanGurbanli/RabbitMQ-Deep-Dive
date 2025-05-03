@@ -735,3 +735,89 @@ Manual ACK	     İşlədikdən sonra təsdiqlənir.	         Təhlükəsizdir.
 NACK	            İşləyə bilmədi, Queue-a və ya DLQ-ya.	 Təhlükəsizdir.
 Reject	           Tək mesaj üçün rədd və ya requeue.	     Təhlükəsizdir.
 ```
+
+---
+
+## <img src="https://github.com/user-attachments/assets/e0d6a2c4-c525-4733-9277-5915d4869c71" width="50px">  Durability və Persistence anlayışları
+
+### 📌 Durability və Persistence nədir?
+
+- Bu iki termin hər ikisi mesajların və Queue-ların qalıcı olması ilə bağlı anlayışlardır, amma fərqli yerlərdə tətbiq olunur.
+
+### 📌 1️⃣ Durability (Davamlılıq)
+
+- Durability — RabbitMQ-da Queue-nun özünün qalıcı olması üçün istifadə olunan xüsusiyyətdir.
+- Yəni:
+    - Broker restart olanda durable olan Queue silinmir, sistem yenidən işə düşəndə də qalır.
+    - Amma içindəki mesajlar yalnız persistent-dirsə saxlanır.
+
+#### 📌 Queue yaradanda `durable` flag-i `true` qoymaq lazımdır:      
+
+- Misal:
+```java
+channel.queueDeclare("my-queue", true, false, false, null);
+```
+- Burada:
+    - `true` → bu Queue durable-dır.
+
+##### 📌 Diqqət: Durability yalnız Queue-nun metadata-sını qoruyur. İçindəki mesajların qalması üçün Persistence də olmalıdır.
+
+### 📌 2️⃣ Persistence (Daimi saxlanma)
+
+- Persistence — mesajların diskinə yazılması deməkdir.
+- Yəni:
+    - Əgər mesaj persistent olaraq göndərilibsə və RabbitMQ çökərsə, sistem yenidən işə düşəndə həmin mesaj Queue-da qalır.
+    - Əks halda mesaj RAM-da qalır və broker çökəndə itir.
+
+#### 📌 Mesaj göndərərkən MessageProperties-də deliveryMode təyin olunur:
+
+- 1 → non-persistent
+- 2 → persistent
+
+- Misal:
+```java
+AMQP.BasicProperties props = new AMQP.BasicProperties.Builder()
+    .deliveryMode(2)
+    .build();
+
+channel.basicPublish("", "my-queue", props, "Hello".getBytes());
+```
+
+##### 📌 Diqqət: Persistent mesajların saxlanması üçün həm də Queue-nun durable olması lazımdır.
+
+### 📌 Durability və Persistence İş Axını:
+```css
+Producer → Exchange → Durable Queue 
+                    │
+              Persistent Mesaj?
+                   │
+                 Bəli → Diskə yazılır
+                  Xeyr → RAM-da qalır
+```
+
+### 📌 Fərq və Əlaqə:
+
+```css
+Anlayış	        Nəyə aiddir?	    Broker restart olarsa
+-----------------------------------------------------------------
+Durability	    Queue-nun özünə	    Queue saxlanır
+Persistence	    Mesajlara	        Persistent mesajlar saxlanır
+```
+
+### 📌 Real Həyat Ssenarisi:
+
+- Scenario:
+    - Ödəniş əməliyyatı gedir.
+    - Producer ödəniş mesajını `deliveryMode=2` ilə `durable` Queue-a göndərir.
+    - RabbitMQ restart olsa belə:
+        - Queue qalır.
+        - Persistent mesajlar Queue-da qalır.
+        - Sistem yenidən işə düşəndə ödəniş mesajı ordan götürülüb işlənə bilər.
+     
+### 📌 Nəticə
+
+- ✅ Durability → Queue restartda saxlanır.
+- ✅ Persistence → Mesaj restartda saxlanır.
+- ✅ Hər ikisini birlikdə istifadə etmək etibarlı sistem dizaynı üçün mütləqdir.
+
+--- 
