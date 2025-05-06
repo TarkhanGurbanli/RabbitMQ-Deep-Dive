@@ -104,7 +104,7 @@ RabbitMQ da məhz bu protokolu əsas götürərək işləyir.
 
 ### 📌 AMQP necə işləyir?
 
-AMQP protokolunda əsas anlayışlar:
+- AMQP protokolunda əsas anlayışlar:
     - Producer -> Mesaj göndərən tərəf
     - Exchange -> Mesajları qəbul edən və onların hansı queue-ya yönləndiriləcəyini müəyyən edən komponent.
     - Queue -> Mesajların saxlanıldığı yer. Consumer-lar burdan oxuyur.
