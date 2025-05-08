@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: RabbitMQ-Deep-Dive
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+  datasource:
+    username: postgres
+    password: root
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/rabbitmq_db
+  jpa:
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        show_sql: true
+
+app:
+  rabbitmq:
+    exchange:
+      book: book-events
+      author: author-events
+    queue:
+      book: book.queue
+      author: author.queue
+    routing:
+      book:
+        created: created
+        updated: updated
+        deleted: deleted
+      author:
+        created: created
+        updated: updated
+        deleted: deleted
