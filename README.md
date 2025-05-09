@@ -1926,5 +1926,18 @@ channel.basicQos(10);
     - ✅ DLQ və Retry mexanizmi qur
     - ✅ Monitoring quraraq hər dəqiqə sistem sağlamlığını yoxla
     - ✅ Lazy queue və TTL tətbiq et
+
+
+### 📌 RabbitMQ İş axını
+
+- Producer mesajı üretir.
+- Mesajı, Exchange’e gönderir.
+- Mesajla beraber Routing Key iletilir.
+- Exchange tipine göre (direct, topic, fanout, headers)
+- Binding Key ile Routing Key eşleşirse ilgili Queue’ya mesaj yönlendirilir.
+- Consumer ilgili Queue’dan mesajı alır ve işler.
+- Eğer mesaj işlenemezse veya belirli kurallara takılırsa:
+- Mesaj, Dead Letter Exchange (DLX)’e yönlendirilir.
+- DLX içindeki Binding Key’e göre Dead Letter Queue (DLQ)’ya taşınır.
  
  ---
