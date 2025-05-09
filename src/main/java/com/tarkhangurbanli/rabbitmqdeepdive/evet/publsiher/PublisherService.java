@@ -1,4 +1,4 @@
-package com.tarkhangurbanli.rabbitmqdeepdive.service.event.publisher;
+package com.tarkhangurbanli.rabbitmqdeepdive.evet.publsiher;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;

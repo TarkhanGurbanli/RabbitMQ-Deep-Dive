@@ -5,7 +5,7 @@ import com.tarkhangurbanli.rabbitmqdeepdive.model.dto.response.Response;
 import com.tarkhangurbanli.rabbitmqdeepdive.model.entity.Author;
 import com.tarkhangurbanli.rabbitmqdeepdive.repository.AuthorRepository;
 import com.tarkhangurbanli.rabbitmqdeepdive.service.AuthorService;
-import com.tarkhangurbanli.rabbitmqdeepdive.service.event.publisher.PublisherService;
+import com.tarkhangurbanli.rabbitmqdeepdive.evet.publsiher.PublisherService;
 import com.tarkhangurbanli.rabbitmqdeepdive.util.ResponseFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
